@@ -1,14 +1,12 @@
 package core;
 
 import model.Neighbor;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Leitura do ficheiro de configuração de vizinhos: roteadores.txt
+ * Leitura e escrita do ficheiro de configuração de vizinhos: roteadores.txt
  */
 public class ConfigLoader {
 
@@ -72,5 +70,21 @@ public class ConfigLoader {
         }
 
         return neighbors;
+    }
+
+    /**
+     * Persiste a lista atual de vizinhos configurados em roteadores.txt.
+     * Chamado após addneighbor ou removeneighbor para manter o arquivo atualizado.
+     */
+    public static void saveNeighbors(Map<String, Neighbor> neighbors) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(CONFIG_FILE))) {
+            for (Neighbor n : neighbors.values()) {
+                pw.println(n.getIp() + ";" + n.getCost());
+            }
+            Logger.log("CONFIG_SALVO", CONFIG_FILE + " atualizado com "
+                    + neighbors.size() + " vizinho(s)");
+        } catch (IOException e) {
+            Logger.log(Logger.ERRO, "Falha ao salvar roteadores.txt: " + e.getMessage());
+        }
     }
 }

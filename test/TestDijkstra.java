@@ -41,8 +41,11 @@ public class TestDijkstra {
         links5.put("192.168.1.99", 50);
         lsdb.accept("192.168.1.5", 1, links5);
 
+        // Vizinhos ativos de myIp: .2, .4 e .5 (conforme enunciado: próximo salto é sempre vizinho ativo)
+        Set<String> activeNeighbors = new HashSet<>(Arrays.asList("192.168.1.2", "192.168.1.4", "192.168.1.5"));
+
         DijkstraRouter router = new DijkstraRouter(myIp, lsdb);
-        Map<String, RoutingEntry> routes = router.computeRoutes();
+        Map<String, RoutingEntry> routes = router.computeRoutes(activeNeighbors);
 
         RoutingTable table = new RoutingTable();
         table.update(routes);
@@ -80,7 +83,7 @@ public class TestDijkstra {
         lsdb.accept("192.168.1.1", 2, newLinks1);
         lsdb.accept("192.168.1.4", 2, newLinks4);
 
-        Map<String, RoutingEntry> routesAfterCostChange = router.computeRoutes();
+        Map<String, RoutingEntry> routesAfterCostChange = router.computeRoutes(activeNeighbors);
         table.update(routesAfterCostChange);
 
         RoutingEntry r4New = routesAfterCostChange.get("192.168.1.4");
@@ -89,7 +92,7 @@ public class TestDijkstra {
 
         System.out.println("\n--- Teste de Queda de Nó / Remoção de Rota ---");
         lsdb.remove("192.168.1.3");
-        Map<String, RoutingEntry> routesAfterNodeDown = router.computeRoutes();
+        Map<String, RoutingEntry> routesAfterNodeDown = router.computeRoutes(activeNeighbors);
         table.update(routesAfterNodeDown);
         assertFalse(routesAfterNodeDown.containsKey("192.168.1.3"), "Rota para 192.168.1.3 deve ter sido removida");
 

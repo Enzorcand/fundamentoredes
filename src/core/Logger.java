@@ -27,6 +27,8 @@ public class Logger {
     public static final String ROTA_MODIFICADA      = "ROTA_MODIFICADA";
     public static final String VIZINHO_ATIVO        = "VIZINHO_ATIVO";
     public static final String VIZINHO_INATIVO      = "VIZINHO_INATIVO";
+    public static final String VIZINHO_ADICIONADO   = "VIZINHO_ADICIONADO";
+    public static final String VIZINHO_REMOVIDO     = "VIZINHO_REMOVIDO";
     public static final String DATA_RECEBIDO        = "DATA_RECEBIDO";
     public static final String DATA_ENCAMINHADA     = "DATA_ENCAMINHADA";
     public static final String DATA_DESCARTADA      = "DATA_DESCARTADA";
@@ -34,6 +36,7 @@ public class Logger {
     public static final String ENLACE_ATIVADO       = "ENLACE_ATIVADO";
     public static final String ENLACE_DESATIVADO    = "ENLACE_DESATIVADO";
     public static final String CUSTO_ALTERADO       = "CUSTO_ALTERADO";
+    public static final String TESTE_LSA            = "TESTE_LSA";
     public static final String ERRO                 = "ERRO";
 
     public static void log(String eventType, String details) {

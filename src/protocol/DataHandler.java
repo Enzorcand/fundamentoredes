@@ -13,10 +13,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Gestor e encaminhador de mensagens de dados (Mensagem 3 - DATA).
+ *
+ * Conforme enunciado:
+ * - O roteador de ORIGEM envia com o TTL inicial, SEM decrementá-lo.
+ * - Roteadores INTERMEDIÁRIOS decrementam TTL antes de encaminhar.
+ * - TTL é opcional ao enviar (0–255); padrão 16.
  */
 public class DataHandler {
 
     public static final int INITIAL_TTL = 16;
+    public static final int MAX_TTL     = 255;
 
     private final RouterState state;
     private final AtomicInteger nextId = new AtomicInteger(1001);
@@ -25,6 +31,7 @@ public class DataHandler {
         this.state = state;
     }
 
+    /** Processa mensagem DATA recebida de outro roteador. */
     public void handleReceived(MessageParser.DataMessage data, String senderIp) {
         if (data.destIp.equals(state.getMyIp())) {
             System.out.println();
@@ -44,6 +51,7 @@ public class DataHandler {
             return;
         }
 
+        // Roteador intermediário: verificar TTL e encaminhar
         if (data.ttl <= 0) {
             Logger.log(Logger.DATA_DESCARTADA,
                     String.format("ID=%d | DESTINO %s | Motivo: TTL expirado (TTL=%d)",
@@ -59,6 +67,7 @@ public class DataHandler {
             return;
         }
 
+        // Decrementa TTL e encaminha (apenas roteadores intermediários decrementam)
         int newTtl = data.ttl - 1;
         String nextHopIp = route.getNextHop();
         String payload = String.format("!%s;%s;%d;%d;%s",
@@ -88,9 +97,25 @@ public class DataHandler {
         }
     }
 
+    /**
+     * Envia mensagem DATA com TTL padrão (16).
+     */
     public boolean sendMessage(String destIp, String message) {
+        return sendMessage(destIp, message, INITIAL_TTL);
+    }
+
+    /**
+     * Envia mensagem DATA com TTL customizado (0–255).
+     * Conforme enunciado: a origem envia com o TTL inicial sem decrementá-lo.
+     */
+    public boolean sendMessage(String destIp, String message, int ttl) {
+        if (ttl < 0 || ttl > MAX_TTL) {
+            Logger.log(Logger.ERRO,
+                    String.format("TTL inválido: %d (deve ser 0–255). Usando padrão %d.", ttl, INITIAL_TTL));
+            ttl = INITIAL_TTL;
+        }
+
         int id = nextId.getAndIncrement();
-        int ttl = INITIAL_TTL;
 
         if (destIp.equals(state.getMyIp())) {
             Logger.log(Logger.DATA_RECEBIDO,
@@ -108,6 +133,7 @@ public class DataHandler {
         }
 
         String nextHopIp = route.getNextHop();
+        // Origem envia com TTL inicial, sem decrementar
         String payload = String.format("!%s;%s;%d;%d;%s",
                 state.getMyIp(), destIp, id, ttl, message);
 

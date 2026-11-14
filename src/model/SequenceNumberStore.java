@@ -6,6 +6,7 @@ import java.nio.file.*;
 
 /**
  * Persiste e recupera o número de sequência do LSA local.
+ * Conforme enunciado: arquivo fixo "seq.txt"; ao reiniciar, continua do valor gravado + 1.
  */
 public class SequenceNumberStore {
 
@@ -13,17 +14,18 @@ public class SequenceNumberStore {
     private int currentSeq;
 
     public SequenceNumberStore(String myIp) {
-        String safeName = myIp.replace('.', '_');
-        this.filePath = Paths.get("seq_" + safeName + ".dat");
-        this.currentSeq = load();
+        this.filePath = Paths.get("seq.txt");
+        this.currentSeq = load(myIp);
     }
 
-    private int load() {
+    private int load(String myIp) {
         if (!Files.exists(filePath)) return 0;
         try {
             String content = new String(Files.readAllBytes(filePath)).trim();
             int seq = Integer.parseInt(content);
-            Logger.log("SEQ_CARREGADO", "Sequência anterior: " + seq + " (ficheiro: " + filePath + ")");
+            // Ao reiniciar, a numeração continua a partir do valor gravado mais 1 (nextAndSave faz o incremento)
+            Logger.log("SEQ_CARREGADO", "Sequência anterior: " + seq
+                    + " — próxima será " + (seq + 1) + " (ficheiro: " + filePath + ")");
             return seq;
         } catch (Exception e) {
             Logger.log(Logger.ERRO, "Falha ao ler sequência de " + filePath + ": " + e.getMessage());

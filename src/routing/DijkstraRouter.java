@@ -8,6 +8,9 @@ import java.util.*;
 /**
  * Motor de roteamento: constrói o grafo a partir da LSDB e calcula os caminhos
  * mínimos utilizando o algoritmo de Dijkstra implementado manualmente.
+ *
+ * Conforme enunciado: "O próximo salto será sempre um vizinho ativo."
+ * Rotas cujo next hop não seja um vizinho atualmente ativo são descartadas.
  */
 public class DijkstraRouter {
 
@@ -20,7 +23,13 @@ public class DijkstraRouter {
         this.lsdb = lsdb;
     }
 
-    public Map<String, RoutingEntry> computeRoutes() {
+    /**
+     * Calcula as rotas de menor custo a partir de myIp.
+     *
+     * @param activeNeighborIps conjunto de IPs de vizinhos atualmente ativos;
+     *                          apenas rotas cujo próximo salto esteja neste conjunto são incluídas.
+     */
+    public Map<String, RoutingEntry> computeRoutes(Set<String> activeNeighborIps) {
         Map<String, Map<String, Integer>> graph = buildValidatedGraph();
 
         if (!graph.containsKey(myIp)) {
@@ -91,6 +100,8 @@ public class DijkstraRouter {
             String nh = nextHop.get(dest);
 
             if (totalCost < Integer.MAX_VALUE && nh != null) {
+                // Enunciado: "O próximo salto será sempre um vizinho ativo."
+                if (!activeNeighborIps.contains(nh)) continue;
                 routes.put(dest, new RoutingEntry(dest, totalCost, nh));
             }
         }
