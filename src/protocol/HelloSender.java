@@ -41,40 +41,54 @@ public class HelloSender implements Runnable {
         Logger.log("HELLO_SENDER", "Encerrado.");
     }
 
-    private void sendHelloToAll() {
+    /** Monta "@IP_ORIGEM*VIZ1*VIZ2..." com os vizinhos configurados e habilitados. */
+    private static String buildHello(RouterState state, Map<String, Neighbor> neighbors) {
         StringBuilder sb = new StringBuilder("@");
         sb.append(state.getMyIp());
-
-        Map<String, Neighbor> neighbors = state.getNeighbors();
         for (Neighbor n : neighbors.values()) {
             if (n.isEnabled()) {
                 sb.append("*").append(n.getIp());
             }
         }
+        return sb.toString();
+    }
 
-        String message = sb.toString();
-        byte[] data = message.getBytes(StandardCharsets.UTF_8);
-
-        if (data.length > UDPListener.MAX_SIZE) {
-            Logger.log(Logger.ERRO, "HELLO excede 1200 bytes — não enviado");
-            return;
-        }
+    private void sendHelloToAll() {
+        Map<String, Neighbor> neighbors = state.getNeighbors();
+        String message = buildHello(state, neighbors);
 
         for (Neighbor neighbor : neighbors.values()) {
             if (!neighbor.isEnabled()) continue;
+            send(state, neighbor.getIp(), message);
+        }
+    }
 
-            try {
-                InetAddress address = InetAddress.getByName(neighbor.getIp());
-                DatagramPacket packet = new DatagramPacket(
-                        data, data.length, address, UDPListener.PORT);
-                state.getSocket().send(packet);
-                Logger.log(Logger.HELLO_ENVIADO,
-                        neighbor.getIp() + " | " + message);
-            } catch (IOException e) {
-                Logger.log(Logger.ERRO,
-                        "Falha ao enviar HELLO para " + neighbor.getIp()
-                                + ": " + e.getMessage());
-            }
+    /**
+     * Envia um HELLO imediato a um único vizinho (fora do ciclo de 5s).
+     * Usado quando uma vizinhança é estabelecida: garante que o outro lado
+     * também nos considere ativo ANTES de receber a sincronização da LSDB,
+     * caso contrário ele descartaria esses LSAs ("remetente não é vizinho ativo").
+     */
+    public static void sendHelloTo(RouterState state, String neighborIp) {
+        Neighbor n = state.getNeighbor(neighborIp);
+        if (n == null || !n.isEnabled()) return;
+        send(state, neighborIp, buildHello(state, state.getNeighbors()));
+    }
+
+    private static void send(RouterState state, String ip, String message) {
+        byte[] data = message.getBytes(StandardCharsets.UTF_8);
+        if (data.length > UDPListener.MAX_SIZE) {
+            Logger.log(Logger.ERRO, "HELLO excede " + UDPListener.MAX_SIZE + " bytes — não enviado");
+            return;
+        }
+        try {
+            InetAddress address = InetAddress.getByName(ip);
+            DatagramPacket packet = new DatagramPacket(
+                    data, data.length, address, UDPListener.PORT);
+            state.getSocket().send(packet);
+            Logger.log(Logger.HELLO_ENVIADO, ip + " | " + message);
+        } catch (IOException e) {
+            Logger.log(Logger.ERRO, "Falha ao enviar HELLO para " + ip + ": " + e.getMessage());
         }
     }
 

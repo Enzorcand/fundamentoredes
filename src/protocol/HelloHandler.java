@@ -7,6 +7,9 @@ import network.MessageParser;
 
 /**
  * Lógica de processamento de mensagens HELLO recebidas.
+ *
+ * Um enlace fica ativo quando o HELLO vem de um vizinho configurado (e habilitado)
+ * e o nosso IP aparece na lista de vizinhos desse HELLO (configuração mútua).
  */
 public class HelloHandler {
 
@@ -17,20 +20,20 @@ public class HelloHandler {
     }
 
     public void handle(MessageParser.HelloMessage hello, String senderIp) {
-        Logger.log(Logger.HELLO_RECEBIDO, hello.originIp);
-
         Neighbor neighbor = state.getNeighbor(hello.originIp);
         if (neighbor == null) {
-            Logger.log(Logger.MENSAGEM_MALFORMADA,
-                    "HELLO de " + hello.originIp
-                            + " descartado — não é vizinho configurado");
+            Logger.log(Logger.HELLO_DESCARTADO, hello.originIp,
+                    "Não é vizinho configurado");
             return;
         }
 
         if (!neighbor.isEnabled()) {
+            Logger.log(Logger.HELLO_DESCARTADO, hello.originIp,
+                    "Enlace lógico desativado");
             return;
         }
 
+        Logger.log(Logger.HELLO_RECEBIDO, hello.originIp);
         neighbor.updateLastHello();
 
         boolean weAreInTheirList = hello.neighbors.contains(state.getMyIp());
@@ -38,17 +41,19 @@ public class HelloHandler {
         if (weAreInTheirList) {
             if (!neighbor.isActive()) {
                 neighbor.setActive(true);
-                Logger.log(Logger.VIZINHO_ATIVO,
-                        hello.originIp + " | Vizinhança estabelecida (bidirecional)");
-                state.notifyNeighborStateChange();
+                Logger.log(Logger.VIZINHO_ATIVO, hello.originIp,
+                        "Vizinhança estabelecida (bidirecional)");
+                // Ordem importa: primeiro HELLO imediato + sincronização da LSDB
+                // (para o vizinho já nos considerar ativo e aceitar os LSAs),
+                // depois a geração do nosso novo LSA com o enlace incluído.
                 state.notifyNewNeighborActive(hello.originIp);
+                state.notifyNeighborStateChange();
             }
         } else {
             if (neighbor.isActive()) {
                 neighbor.setActive(false);
-                Logger.log(Logger.VIZINHO_INATIVO,
-                        hello.originIp
-                                + " | Perdida bidirecionalidade (nosso IP ausente no HELLO deles)");
+                Logger.log(Logger.VIZINHO_INATIVO, hello.originIp,
+                        "Perdida bidirecionalidade (nosso IP ausente no HELLO dele)");
                 state.notifyNeighborStateChange();
             }
         }

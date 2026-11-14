@@ -83,6 +83,13 @@ public class CLI implements Runnable {
                 printNeighbors();
                 break;
 
+            case "quiet":
+                boolean q = Logger.toggleQuiet();
+                System.out.println(q
+                        ? "[INFO] Modo silencioso LIGADO: HELLOs não aparecem no terminal (continuam no ficheiro de log)."
+                        : "[INFO] Modo silencioso DESLIGADO: HELLOs voltam a aparecer no terminal.");
+                break;
+
             case "help":
                 printHelp();
                 break;
@@ -292,8 +299,9 @@ public class CLI implements Runnable {
         int newCost;
         try {
             newCost = Integer.parseInt(costStr);
-            if (newCost <= 0) {
-                System.out.println("[ERRO] Custo deve ser um inteiro positivo (> 0).");
+            if (!MessageParser.isValidCost(newCost)) {
+                System.out.println("[ERRO] Custo deve ser um inteiro entre "
+                        + MessageParser.MIN_COST + " e " + MessageParser.MAX_COST + ".");
                 return;
             }
         } catch (NumberFormatException e) {
@@ -303,6 +311,7 @@ public class CLI implements Runnable {
 
         int oldCost = n.getCost();
         n.setCost(newCost);
+        ConfigLoader.saveNeighbors(state.getNeighbors());
 
         System.out.printf("[ALTERAÇÃO] Custo do enlace com %s alterado de %d para %d.%n", ip, oldCost, newCost);
         Logger.log(Logger.CUSTO_ALTERADO, String.format("%s | %d -> %d", ip, oldCost, newCost));
@@ -355,8 +364,9 @@ public class CLI implements Runnable {
         int cost;
         try {
             cost = Integer.parseInt(costStr);
-            if (cost <= 0) {
-                System.out.println("[ERRO] Custo deve ser um inteiro positivo (> 0).");
+            if (!MessageParser.isValidCost(cost)) {
+                System.out.println("[ERRO] Custo deve ser um inteiro entre "
+                        + MessageParser.MIN_COST + " e " + MessageParser.MAX_COST + ".");
                 return;
             }
         } catch (NumberFormatException e) {
@@ -519,7 +529,7 @@ public class CLI implements Runnable {
         System.out.println("  VIZINHOS:");
         System.out.println("    disable <IP>                 Desativa enlace (descarta HELLOs/LSAs dele)");
         System.out.println("    enable <IP>                  Ativa enlace (aguarda novo HELLO bidirecional)");
-        System.out.println("    cost <IP> <custo>            Altera custo do enlace e atualiza LSA/rotas");
+        System.out.println("    cost <IP> <custo>            Altera custo do enlace (1-65535) e atualiza LSA/rotas");
         System.out.println("    addneighbor <IP> <custo>     Adiciona vizinho configurado (atualiza roteadores.txt)");
         System.out.println("    removeneighbor <IP>          Remove vizinho configurado (atualiza roteadores.txt)");
         System.out.println();
@@ -532,6 +542,7 @@ public class CLI implements Runnable {
         System.out.println("    testlsa <origem> <viz> dup   Reenvia LSA armazenado como duplicado (seq original)");
         System.out.println("    testlsa <origem> <viz> old   Reenvia LSA armazenado como antigo (seq - 1)");
         System.out.println();
+        System.out.println("  quiet                          Liga/desliga HELLOs no terminal (o ficheiro de log guarda tudo)");
         System.out.println("  help                           Exibe este menu");
         System.out.println("  quit / exit                    Encerra o roteador");
         System.out.println("══════════════════════════════════════════════════════════════════════");

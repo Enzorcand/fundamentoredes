@@ -7,10 +7,19 @@ import java.util.*;
 
 /**
  * Motor de roteamento: constrói o grafo a partir da LSDB e calcula os caminhos
- * mínimos utilizando o algoritmo de Dijkstra implementado manualmente.
+ * mínimos com o algoritmo de Dijkstra implementado manualmente.
  *
- * Conforme enunciado: "O próximo salto será sempre um vizinho ativo."
- * Rotas cujo next hop não seja um vizinho atualmente ativo são descartadas.
+ * Regras do enunciado:
+ *  - O grafo usa os custos anunciados em cada direção.
+ *  - Uma aresta só é usada quando os LSAs válidos das DUAS extremidades a reconhecem.
+ *  - O próximo salto é sempre um vizinho ativo.
+ *  - Havendo caminhos de mesmo custo, a escolha é aleatória.
+ *  - Não há rota para o próprio roteador.
+ *
+ * Empates: o algoritmo guarda o CONJUNTO de próximos saltos possíveis de cada
+ * destino (todos os caminhos de custo mínimo). Se o próximo salto atual da
+ * tabela continua nesse conjunto, ele é mantido; caso contrário é sorteado um.
+ * Isso evita que a rota "oscile" entre caminhos iguais a cada execução.
  */
 public class DijkstraRouter {
 
@@ -23,71 +32,68 @@ public class DijkstraRouter {
         this.lsdb = lsdb;
     }
 
+    public Map<String, RoutingEntry> computeRoutes(Set<String> activeNeighborIps) {
+        return computeRoutes(activeNeighborIps, Collections.emptyMap());
+    }
+
     /**
      * Calcula as rotas de menor custo a partir de myIp.
      *
-     * @param activeNeighborIps conjunto de IPs de vizinhos atualmente ativos;
-     *                          apenas rotas cujo próximo salto esteja neste conjunto são incluídas.
+     * @param activeNeighborIps IPs dos vizinhos atualmente ativos (próximos saltos permitidos)
+     * @param previousRoutes    tabela atual, usada para manter o próximo salto em caso de empate
      */
-    public Map<String, RoutingEntry> computeRoutes(Set<String> activeNeighborIps) {
+    public Map<String, RoutingEntry> computeRoutes(Set<String> activeNeighborIps,
+                                                   Map<String, RoutingEntry> previousRoutes) {
         Map<String, Map<String, Integer>> graph = buildValidatedGraph();
 
         if (!graph.containsKey(myIp)) {
             return Collections.emptyMap();
         }
 
-        Map<String, Integer> dist = new HashMap<>();
-        Map<String, String> nextHop = new HashMap<>();
+        // dist[v]  = menor custo conhecido de myIp até v
+        // hops[v]  = conjunto de próximos saltos (vizinhos diretos) que levam a v com esse custo
+        Map<String, Long> dist = new HashMap<>();
+        Map<String, Set<String>> hops = new HashMap<>();
         Set<String> unvisited = new HashSet<>(graph.keySet());
 
         for (String node : graph.keySet()) {
-            dist.put(node, Integer.MAX_VALUE);
-            nextHop.put(node, null);
+            dist.put(node, Long.MAX_VALUE);
+            hops.put(node, new TreeSet<>());
         }
-        dist.put(myIp, 0);
+        dist.put(myIp, 0L);
 
         while (!unvisited.isEmpty()) {
-            int minDist = Integer.MAX_VALUE;
-            List<String> candidates = new ArrayList<>();
-
+            // Seleciona o nó não visitado de menor distância
+            String u = null;
+            long best = Long.MAX_VALUE;
             for (String node : unvisited) {
-                int d = dist.get(node);
-                if (d < minDist) {
-                    minDist = d;
-                    candidates.clear();
-                    candidates.add(node);
-                } else if (d == minDist && d < Integer.MAX_VALUE) {
-                    candidates.add(node);
+                long d = dist.get(node);
+                if (d < best) {
+                    best = d;
+                    u = node;
                 }
             }
-
-            if (minDist == Integer.MAX_VALUE || candidates.isEmpty()) {
-                break;
-            }
-
-            String u = candidates.get(random.nextInt(candidates.size()));
+            if (u == null) break; // restantes são inalcançáveis
             unvisited.remove(u);
 
-            Map<String, Integer> neighbors = graph.get(u);
-            if (neighbors == null) continue;
-
-            for (Map.Entry<String, Integer> edge : neighbors.entrySet()) {
+            for (Map.Entry<String, Integer> edge : graph.get(u).entrySet()) {
                 String v = edge.getKey();
                 if (!unvisited.contains(v)) continue;
 
-                int edgeCost = edge.getValue();
-                int alt = dist.get(u) + edgeCost;
-                int currentDist = dist.get(v);
+                long alt = best + edge.getValue();
+                long current = dist.get(v);
 
-                String candidateNextHop = u.equals(myIp) ? v : nextHop.get(u);
+                // Se u é a própria origem, o próximo salto para v é o próprio v;
+                // senão, v herda os próximos saltos de u.
+                Set<String> viaU = u.equals(myIp)
+                        ? Collections.singleton(v)
+                        : hops.get(u);
 
-                if (alt < currentDist) {
+                if (alt < current) {
                     dist.put(v, alt);
-                    nextHop.put(v, candidateNextHop);
-                } else if (alt == currentDist) {
-                    if (random.nextBoolean()) {
-                        nextHop.put(v, candidateNextHop);
-                    }
+                    hops.put(v, new TreeSet<>(viaU));
+                } else if (alt == current) {
+                    hops.get(v).addAll(viaU); // caminho de mesmo custo: acumula opções
                 }
             }
         }
@@ -95,44 +101,55 @@ public class DijkstraRouter {
         Map<String, RoutingEntry> routes = new TreeMap<>();
         for (String dest : graph.keySet()) {
             if (dest.equals(myIp)) continue;
+            long totalCost = dist.get(dest);
+            if (totalCost == Long.MAX_VALUE) continue;
 
-            int totalCost = dist.get(dest);
-            String nh = nextHop.get(dest);
-
-            if (totalCost < Integer.MAX_VALUE && nh != null) {
-                // Enunciado: "O próximo salto será sempre um vizinho ativo."
-                if (!activeNeighborIps.contains(nh)) continue;
-                routes.put(dest, new RoutingEntry(dest, totalCost, nh));
+            // Próximo salto tem de ser vizinho ativo
+            List<String> options = new ArrayList<>();
+            for (String h : hops.get(dest)) {
+                if (activeNeighborIps.contains(h)) options.add(h);
             }
+            if (options.isEmpty()) continue;
+
+            String chosen;
+            RoutingEntry prev = previousRoutes.get(dest);
+            if (prev != null && options.contains(prev.getNextHop())) {
+                chosen = prev.getNextHop();                         // mantém a escolha atual
+            } else {
+                chosen = options.get(random.nextInt(options.size())); // empate: aleatório
+            }
+            routes.put(dest, new RoutingEntry(dest, (int) totalCost, chosen));
         }
 
         return routes;
     }
 
+    /**
+     * Grafo dirigido: aresta u→v com o custo anunciado por u, incluída apenas
+     * se o LSA de v também anunciar o enlace com u.
+     */
     private Map<String, Map<String, Integer>> buildValidatedGraph() {
-        Map<String, Map<String, Integer>> graph = new HashMap<>();
-        Collection<LSAEntry> entries = lsdb.getAll();
-
-        for (LSAEntry entry : entries) {
-            graph.put(entry.getOriginIp(), new HashMap<>());
+        Map<String, LSAEntry> byOrigin = new HashMap<>();
+        for (LSAEntry e : lsdb.getAll()) { // snapshot consistente
+            byOrigin.put(e.getOriginIp(), e);
         }
 
-        for (LSAEntry lsaU : entries) {
-            String u = lsaU.getOriginIp();
+        Map<String, Map<String, Integer>> graph = new HashMap<>();
+        for (String origin : byOrigin.keySet()) {
+            graph.put(origin, new HashMap<>());
+        }
 
+        for (LSAEntry lsaU : byOrigin.values()) {
+            String u = lsaU.getOriginIp();
             for (Map.Entry<String, Integer> linkU : lsaU.getLinks().entrySet()) {
                 String v = linkU.getKey();
-                int costUV = linkU.getValue();
-
-                LSAEntry lsaV = lsdb.get(v);
+                LSAEntry lsaV = byOrigin.get(v);
                 if (lsaV == null) continue;
-
                 if (lsaV.getLinks().containsKey(u)) {
-                    graph.get(u).put(v, costUV);
+                    graph.get(u).put(v, linkU.getValue());
                 }
             }
         }
-
         return graph;
     }
 }

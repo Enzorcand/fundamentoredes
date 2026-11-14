@@ -25,6 +25,7 @@ public class LSASender implements Runnable {
     private final SequenceNumberStore seqStore;
     private final Object lock = new Object();
     private volatile boolean running = true;
+    private boolean pending = false; // protegido por "lock"
 
     private Runnable onTopologyChanged = () -> {};
 
@@ -37,8 +38,14 @@ public class LSASender implements Runnable {
         this.onTopologyChanged = cb;
     }
 
+    /**
+     * Pede a geração imediata de um novo LSA (mudança de vizinhança ou custo).
+     * A flag "pending" garante que o pedido não se perde se chegar enquanto
+     * a thread ainda está a gerar o LSA anterior (fora do wait()).
+     */
     public void triggerNow() {
         synchronized (lock) {
+            pending = true;
             lock.notifyAll();
         }
     }
@@ -52,12 +59,19 @@ public class LSASender implements Runnable {
         while (running) {
             synchronized (lock) {
                 try {
-                    lock.wait(LSA_INTERVAL_MS);
+                    long deadline = System.currentTimeMillis() + LSA_INTERVAL_MS;
+                    // Espera até haver pedido pendente ou passar o intervalo periódico
+                    while (!pending && running) {
+                        long remaining = deadline - System.currentTimeMillis();
+                        if (remaining <= 0) break;
+                        lock.wait(remaining);
+                    }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
                 }
                 if (!running) break;
+                pending = false;
             }
             generateAndSend();
         }
@@ -137,12 +151,12 @@ public class LSASender implements Runnable {
 
         Thread syncThread = new Thread(() -> {
             if (snapshot.isEmpty()) {
-                Logger.log("LSDB_SYNC",
+                Logger.log(Logger.LSDB_SYNC,
                         "LSDB vazia — nada a enviar para novo vizinho " + neighborIp);
                 return;
             }
 
-            Logger.log("LSDB_SYNC",
+            Logger.log(Logger.LSDB_SYNC,
                     "Sincronização inicial com " + neighborIp
                             + " — enviando " + snapshot.size() + " LSA(s)");
 
@@ -171,7 +185,7 @@ public class LSASender implements Runnable {
                 }
             }
 
-            Logger.log("LSDB_SYNC",
+            Logger.log(Logger.LSDB_SYNC,
                     "Sincronização completa com " + neighborIp
                             + " — " + sent + "/" + snapshot.size() + " LSA(s) enviados");
 

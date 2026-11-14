@@ -41,11 +41,13 @@ public class LSAExpirationMonitor implements Runnable {
     }
 
     private void checkExpired() {
-        List<String> expired = state.getLsdb().removeExpired();
+        List<String> expired = state.getLsdb().removeExpired(state.getMyIp());
 
         for (String ip : expired) {
-            Logger.log(Logger.LSA_EXPIRADO,
-                    ip + " | LSA removido da LSDB após 30s sem renovação");
+            Logger.log(Logger.LSA_EXPIRADO, ip, "30s sem nova versão aceite");
+            Logger.log(Logger.LSDB_ALTERADA, ip, "Registo removido (expirado)");
+        }
+        if (!expired.isEmpty()) {
             onTopologyChanged.run();
         }
     }

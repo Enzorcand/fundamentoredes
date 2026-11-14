@@ -42,13 +42,14 @@ public class Main {
                     + "Passe-o como argumento: java -cp out Main <IP>");
             System.exit(1);
         }
+        Logger.init(myIp);
         Logger.log("INICIALIZADO", "IP do roteador: " + myIp);
 
         // 2. Carregar vizinhos do ficheiro roteadores.txt
         Map<String, Neighbor> neighbors = ConfigLoader.loadNeighbors();
         if (neighbors.isEmpty()) {
-            Logger.log(Logger.ERRO, "Nenhum vizinho carregado. Verifique roteadores.txt.");
-            System.exit(1);
+            Logger.log(Logger.ERRO, "Nenhum vizinho carregado de roteadores.txt. "
+                    + "Use 'addneighbor <IP> <custo>' para adicionar.");
         }
         Logger.log("INICIALIZADO", neighbors.size() + " vizinho(s) configurado(s)");
 
@@ -81,7 +82,12 @@ public class Main {
 
         // 8. Ligação de callbacks e gatilhos de eventos
         state.setOnNeighborStateChange(lsaSender::triggerNow);
-        state.setOnNewNeighborActive(lsaSender::syncLSDBWithNeighbor);
+        // Nova vizinhança: HELLO imediato (para o vizinho também nos ativar)
+        // e, em seguida, envio de todos os LSAs válidos da LSDB (sincronização).
+        state.setOnNewNeighborActive(ip -> {
+            HelloSender.sendHelloTo(state, ip);
+            lsaSender.syncLSDBWithNeighbor(ip);
+        });
         lsaHandler.setOnTopologyChanged(state::triggerDijkstra);
         expirationMonitor.setOnTopologyChanged(state::triggerDijkstra);
         lsaSender.setOnTopologyChanged(state::triggerDijkstra);
@@ -116,6 +122,7 @@ public class Main {
             monitor.stop();
             lsaSender.stop();
             expirationMonitor.stop();
+            Logger.close();
         }, "Shutdown-Hook"));
 
         Logger.log("PRONTO", "Roteador " + myIp
@@ -143,6 +150,10 @@ public class Main {
         try {
             String detected = InetAddress.getLocalHost().getHostAddress();
             Logger.log("AUTO_IP", "IP detectado automaticamente: " + detected);
+            if (detected.startsWith("127.")) {
+                Logger.log(Logger.ERRO, "IP detectado é de loopback (" + detected
+                        + "). Passe o IP da rede como argumento: java -cp out Main <IP>");
+            }
             return detected;
         } catch (Exception e) {
             return null;

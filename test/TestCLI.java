@@ -17,6 +17,12 @@ public class TestCLI {
     public static void main(String[] args) throws Exception {
         System.out.println("=== Teste da Interface Interativa CLI ===\n");
 
+        // Os comandos cost/addneighbor/removeneighbor gravam o roteadores.txt;
+        // no teste, gravar num ficheiro temporário para não alterar a configuração real.
+        java.io.File tmpCfg = java.io.File.createTempFile("roteadores_teste", ".txt");
+        tmpCfg.deleteOnExit();
+        System.setProperty("roteadores.file", tmpCfg.getAbsolutePath());
+
         String myIp = "192.168.1.1";
         DatagramSocket dummySocket = new DatagramSocket();
         Map<String, Neighbor> neighbors = new HashMap<>();

@@ -12,6 +12,10 @@ import java.util.Map;
  */
 public class MessageParser {
 
+    public static final int MIN_COST = 1;
+    public static final int MAX_COST = 65535;
+    public static final int MAX_TTL  = 255;
+
     public static class HelloMessage {
         public final String originIp;
         public final java.util.List<String> neighbors;
@@ -144,9 +148,9 @@ public class MessageParser {
             int cost;
             try {
                 cost = Integer.parseInt(link[1].trim());
-                if (cost <= 0) {
+                if (!isValidCost(cost)) {
                     Logger.log(Logger.MENSAGEM_MALFORMADA,
-                            "LSA custo inválido (deve ser positivo): " + cost);
+                            "LSA custo inválido (deve estar entre " + MIN_COST + " e " + MAX_COST + "): " + cost);
                     return null;
                 }
             } catch (NumberFormatException e) {
@@ -191,8 +195,8 @@ public class MessageParser {
         int ttl;
         try {
             ttl = Integer.parseInt(parts[3].trim());
-            if (ttl < 0) {
-                Logger.log(Logger.MENSAGEM_MALFORMADA, "DATA TTL negativo: " + ttl);
+            if (ttl < 0 || ttl > MAX_TTL) {
+                Logger.log(Logger.MENSAGEM_MALFORMADA, "DATA TTL fora do intervalo 0-" + MAX_TTL + ": " + ttl);
                 return null;
             }
         } catch (NumberFormatException e) {
@@ -204,8 +208,18 @@ public class MessageParser {
         return new DataMessage(originIp, destIp, id, ttl, content);
     }
 
+    /** IPv4 em notação decimal com quatro octetos de 0 a 255. */
     public static boolean isValidIp(String ip) {
         if (ip == null) return false;
-        return ip.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+        if (!ip.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")) return false;
+        for (String octet : ip.split("\\.")) {
+            if (Integer.parseInt(octet) > 255) return false;
+        }
+        return true;
+    }
+
+    /** Custo de enlace válido: inteiro de MIN_COST a MAX_COST. */
+    public static boolean isValidCost(int cost) {
+        return cost >= MIN_COST && cost <= MAX_COST;
     }
 }

@@ -96,7 +96,6 @@ public class LSAHandler {
     }
 
     private int getMaxSeen(LSDB lsdb, String originIp) {
-        model.LSAEntry e = lsdb.get(originIp);
-        return e != null ? e.getSequenceNumber() : 0;
+        return lsdb.getMaxSeqSeen(originIp);
     }
 }

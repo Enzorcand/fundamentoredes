@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 
@@ -56,8 +59,14 @@ public class UDPListener implements Runnable {
 
             String raw;
             try {
-                raw = new String(packet.getData(), 0, length, StandardCharsets.UTF_8);
-            } catch (Exception e) {
+                // Decodificação estrita: bytes que não são UTF-8 válido geram exceção
+                // (new String(...) substituiria silenciosamente por '?').
+                raw = StandardCharsets.UTF_8.newDecoder()
+                        .onMalformedInput(CodingErrorAction.REPORT)
+                        .onUnmappableCharacter(CodingErrorAction.REPORT)
+                        .decode(ByteBuffer.wrap(packet.getData(), 0, length))
+                        .toString();
+            } catch (CharacterCodingException e) {
                 Logger.log(Logger.MENSAGEM_MALFORMADA,
                         "Datagrama de " + senderIp + " não é UTF-8 válido — descartado");
                 continue;

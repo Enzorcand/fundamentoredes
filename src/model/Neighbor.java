@@ -3,14 +3,19 @@ package model;
 /**
  * Representa um vizinho configurado no roteadores.txt.
  * Armazena IP, custo, estado (ativo/inativo) e timestamp da última receção de HELLO válido.
+ *
+ * Os campos são volatile porque são lidos e escritos por várias threads
+ * (CLI, processador de mensagens, monitor de vizinhos, emissores de HELLO/LSA).
  */
 public class Neighbor {
 
+    public static final long HELLO_TIMEOUT_MS = 15_000L;
+
     private final String ip;
-    private int cost;
-    private boolean enabled;
-    private boolean active;
-    private long lastHelloTimestamp;
+    private volatile int cost;
+    private volatile boolean enabled;
+    private volatile boolean active;
+    private volatile long lastHelloTimestamp;
 
     public Neighbor(String ip, int cost) {
         this.ip = ip;
@@ -32,8 +37,9 @@ public class Neighbor {
     public void updateLastHello() { this.lastHelloTimestamp = System.currentTimeMillis(); }
 
     public boolean isHelloTimedOut() {
-        if (lastHelloTimestamp == 0L) return true;
-        return (System.currentTimeMillis() - lastHelloTimestamp) > 15_000L;
+        long last = lastHelloTimestamp;
+        if (last == 0L) return true;
+        return (System.currentTimeMillis() - last) > HELLO_TIMEOUT_MS;
     }
 
     @Override

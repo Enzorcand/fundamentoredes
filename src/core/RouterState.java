@@ -93,7 +93,8 @@ public class RouterState {
         for (Neighbor n : neighbors.values()) {
             if (n.isActive()) activeNeighborIps.add(n.getIp());
         }
-        Map<String, RoutingEntry> routes = dijkstraRouter.computeRoutes(activeNeighborIps);
+        Map<String, RoutingEntry> routes =
+                dijkstraRouter.computeRoutes(activeNeighborIps, routingTable.getAll());
         routingTable.update(routes);
     }
 }

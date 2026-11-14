@@ -1,6 +1,7 @@
 package core;
 
 import model.Neighbor;
+import network.MessageParser;
 import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -10,7 +11,8 @@ import java.util.Map;
  */
 public class ConfigLoader {
 
-    private static final String CONFIG_FILE = "roteadores.txt";
+    /** Pode ser trocado com -Droteadores.file=... (usado pelos testes para não mexer no ficheiro real). */
+    private static final String CONFIG_FILE = System.getProperty("roteadores.file", "roteadores.txt");
 
     public static Map<String, Neighbor> loadNeighbors() {
         Map<String, Neighbor> neighbors = new LinkedHashMap<>();
@@ -41,10 +43,10 @@ public class ConfigLoader {
                 int cost;
                 try {
                     cost = Integer.parseInt(costStr);
-                    if (cost <= 0) {
+                    if (!MessageParser.isValidCost(cost)) {
                         Logger.log(Logger.MENSAGEM_MALFORMADA,
-                                String.format("roteadores.txt linha %d: custo deve ser inteiro positivo (foi %d)",
-                                        lineNumber, cost));
+                                String.format("roteadores.txt linha %d: custo deve estar entre %d e %d (foi %d)",
+                                        lineNumber, MessageParser.MIN_COST, MessageParser.MAX_COST, cost));
                         continue;
                     }
                 } catch (NumberFormatException e) {
@@ -54,7 +56,7 @@ public class ConfigLoader {
                     continue;
                 }
 
-                if (!ip.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")) {
+                if (!MessageParser.isValidIp(ip)) {
                     Logger.log(Logger.MENSAGEM_MALFORMADA,
                             String.format("roteadores.txt linha %d: IP inválido '%s'",
                                     lineNumber, ip));
