@@ -41,9 +41,9 @@ public class ConfigLoader {
                 int cost;
                 try {
                     cost = Integer.parseInt(costStr);
-                    if (cost <= 0) {
+                    if (cost < 1 || cost > 65535) {
                         Logger.log(Logger.MENSAGEM_MALFORMADA,
-                                String.format("roteadores.txt linha %d: custo deve ser inteiro positivo (foi %d)",
+                                String.format("roteadores.txt linha %d: custo deve estar entre 1 e 65535 (foi %d)",
                                         lineNumber, cost));
                         continue;
                     }

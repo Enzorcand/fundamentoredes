@@ -35,6 +35,23 @@ public class SequenceNumberStore {
 
     public synchronized int nextAndSave() {
         currentSeq++;
+        save();
+        return currentSeq;
+    }
+
+    /**
+     * Regra do adendo: ao receber o próprio LSA com número maior ou igual,
+     * salta a sequência para superar o anúncio antigo e persiste em seq.txt.
+     */
+    public synchronized void advanceTo(int newSeq) {
+        if (newSeq > currentSeq) {
+            currentSeq = newSeq;
+            save();
+            Logger.log("SEQ_SALTADA", "Sequência própria avançada para " + currentSeq + " (sobrepondo LSA antigo)");
+        }
+    }
+
+    private void save() {
         try {
             Files.write(filePath,
                     String.valueOf(currentSeq).getBytes(),
@@ -44,7 +61,6 @@ public class SequenceNumberStore {
             Logger.log(Logger.ERRO, "Falha ao guardar sequência " + currentSeq
                     + " em " + filePath + ": " + e.getMessage());
         }
-        return currentSeq;
     }
 
     public synchronized int getCurrent() {

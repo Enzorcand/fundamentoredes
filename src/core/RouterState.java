@@ -4,6 +4,7 @@ import model.LSDB;
 import model.Neighbor;
 import model.RoutingEntry;
 import model.RoutingTable;
+import model.SequenceNumberStore;
 import protocol.DataHandler;
 import routing.DijkstraRouter;
 import java.net.DatagramSocket;
@@ -23,6 +24,7 @@ public class RouterState {
     private final RoutingTable routingTable;
     private final DijkstraRouter dijkstraRouter;
     private final DataHandler dataHandler;
+    private SequenceNumberStore seqStore;
 
     private Runnable onNeighborStateChange = () -> {};
     private java.util.function.Consumer<String> onNewNeighborActive = ip -> {};
@@ -46,6 +48,8 @@ public class RouterState {
     public RoutingTable getRoutingTable() { return routingTable; }
     public DijkstraRouter getDijkstraRouter() { return dijkstraRouter; }
     public DataHandler getDataHandler() { return dataHandler; }
+    public SequenceNumberStore getSeqStore() { return seqStore; }
+    public void setSeqStore(SequenceNumberStore seqStore) { this.seqStore = seqStore; }
 
     /** Retorna snapshot imutável dos vizinhos (thread-safe para iteração). */
     public synchronized Map<String, Neighbor> getNeighbors() {

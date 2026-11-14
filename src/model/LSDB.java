@@ -25,6 +25,10 @@ public class LSDB {
     }
 
     public synchronized boolean accept(String originIp, int seq, Map<String, Integer> links) {
+        int maxSeen = maxSeqSeen.getOrDefault(originIp, 0);
+        if (seq <= maxSeen) {
+            return false;
+        }
         maxSeqSeen.put(originIp, seq);
         LSAEntry existing = entries.get(originIp);
         if (existing == null) {

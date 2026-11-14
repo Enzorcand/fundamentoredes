@@ -9,18 +9,43 @@ import java.util.*;
  * Motor de roteamento: constrói o grafo a partir da LSDB e calcula os caminhos
  * mínimos utilizando o algoritmo de Dijkstra implementado manualmente.
  *
- * Conforme enunciado: "O próximo salto será sempre um vizinho ativo."
- * Rotas cujo next hop não seja um vizinho atualmente ativo são descartadas.
+ * Conforme enunciado e adendos:
+ * - "O próximo salto será sempre um vizinho ativo."
+ * - Desempate determinístico: menor IP de próximo salto (Adendo 159).
  */
 public class DijkstraRouter {
 
     private final String myIp;
     private final LSDB lsdb;
-    private final Random random = new Random();
 
     public DijkstraRouter(String myIp, LSDB lsdb) {
         this.myIp = myIp;
         this.lsdb = lsdb;
+    }
+
+    /**
+     * Compara dois endereços IPv4 numericamente por octetos.
+     */
+    public static int compareIps(String ip1, String ip2) {
+        if (ip1 == null && ip2 == null) return 0;
+        if (ip1 == null) return 1;
+        if (ip2 == null) return -1;
+        String[] parts1 = ip1.split("\\.");
+        String[] parts2 = ip2.split("\\.");
+        if (parts1.length == 4 && parts2.length == 4) {
+            try {
+                for (int i = 0; i < 4; i++) {
+                    int octet1 = Integer.parseInt(parts1[i]);
+                    int octet2 = Integer.parseInt(parts2[i]);
+                    if (octet1 != octet2) {
+                        return Integer.compare(octet1, octet2);
+                    }
+                }
+                return 0;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return ip1.compareTo(ip2);
     }
 
     /**
@@ -48,24 +73,25 @@ public class DijkstraRouter {
 
         while (!unvisited.isEmpty()) {
             int minDist = Integer.MAX_VALUE;
-            List<String> candidates = new ArrayList<>();
+            String u = null;
 
             for (String node : unvisited) {
                 int d = dist.get(node);
                 if (d < minDist) {
                     minDist = d;
-                    candidates.clear();
-                    candidates.add(node);
+                    u = node;
                 } else if (d == minDist && d < Integer.MAX_VALUE) {
-                    candidates.add(node);
+                    // Desempate determinístico pelo menor IP de nó
+                    if (u == null || compareIps(node, u) < 0) {
+                        u = node;
+                    }
                 }
             }
 
-            if (minDist == Integer.MAX_VALUE || candidates.isEmpty()) {
+            if (minDist == Integer.MAX_VALUE || u == null) {
                 break;
             }
 
-            String u = candidates.get(random.nextInt(candidates.size()));
             unvisited.remove(u);
 
             Map<String, Integer> neighbors = graph.get(u);
@@ -85,7 +111,9 @@ public class DijkstraRouter {
                     dist.put(v, alt);
                     nextHop.put(v, candidateNextHop);
                 } else if (alt == currentDist) {
-                    if (random.nextBoolean()) {
+                    // Adendo 159: Desempate pelo menor IP de próximo salto
+                    String existingNextHop = nextHop.get(v);
+                    if (existingNextHop == null || compareIps(candidateNextHop, existingNextHop) < 0) {
                         nextHop.put(v, candidateNextHop);
                     }
                 }

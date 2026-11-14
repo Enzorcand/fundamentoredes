@@ -27,18 +27,40 @@ public class LSAHandler {
     public void handle(MessageParser.LSAMessage lsa, String senderIp) {
         LSDB lsdb = state.getLsdb();
 
+        // 1. Identificar o vizinho remetente (suporta localhost para testes locais)
         Neighbor sender = state.getNeighbor(senderIp);
-        if (sender == null || !sender.isActive()) {
+        if (sender == null && ("127.0.0.1".equals(senderIp) || "0:0:0:0:0:0:0:1".equals(senderIp))) {
+            sender = state.getNeighbor(lsa.originIp);
+            if (sender == null) {
+                for (Neighbor n : state.getNeighbors().values()) {
+                    if (n.isEnabled()) {
+                        sender = n;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Conforme Adendo 158: Aceitação de LSA de qualquer vizinho CONFIGURADO (e habilitado),
+        // não só de vizinho ativo (elimina perda de sincronização inicial).
+        // Se o enlace foi desativado logicamente (disable), descarta o LSA dele.
+        if (sender == null || !sender.isEnabled()) {
             Logger.log(Logger.LSA_DESCARTADO,
                     lsa.originIp + " | SEQ=" + lsa.sequenceNumber
-                            + " | Remetente " + senderIp + " não é vizinho activo");
+                            + " | Remetente " + senderIp + " não é vizinho configurado/habilitado");
             return;
         }
 
+        // 2. Verificar se o LSA tem origem no próprio roteador
+        // Conforme linha 44 e Adendo 161: descartar sem encaminhar, e saltar sequência se número for maior/igual
         if (lsa.originIp.equals(state.getMyIp())) {
+            if (state.getSeqStore() != null && lsa.sequenceNumber >= state.getSeqStore().getCurrent()) {
+                state.getSeqStore().advanceTo(lsa.sequenceNumber);
+                state.notifyNeighborStateChange(); // Dispara LSA com sequência superando o anúncio antigo
+            }
             Logger.log(Logger.LSA_DESCARTADO,
                     lsa.originIp + " | SEQ=" + lsa.sequenceNumber
-                            + " | LSA próprio reflectido — descartado");
+                            + " | LSA próprio recebido — descartado sem encaminhar");
             return;
         }
 

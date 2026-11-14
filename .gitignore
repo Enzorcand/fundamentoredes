@@ -4,6 +4,7 @@ out/
 
 # Ficheiros de estado em tempo de execução
 seq_*.dat
+*.log
 
 # SO / IDEs
 .DS_Store

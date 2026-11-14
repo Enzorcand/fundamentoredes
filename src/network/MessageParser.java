@@ -119,11 +119,12 @@ public class MessageParser {
 
         int seq;
         try {
-            seq = Integer.parseInt(header[1].trim());
-            if (seq < 1) {
-                Logger.log(Logger.MENSAGEM_MALFORMADA, "LSA com sequência inválida: " + seq);
+            long s = Long.parseLong(header[1].trim());
+            if (s < 1 || s > 2147483647L) {
+                Logger.log(Logger.MENSAGEM_MALFORMADA, "LSA com sequência fora do intervalo (1 a 2147483647): " + s);
                 return null;
             }
+            seq = (int) s;
         } catch (NumberFormatException e) {
             Logger.log(Logger.MENSAGEM_MALFORMADA, "LSA sequência não numérica: '" + header[1] + "'");
             return null;
@@ -144,9 +145,9 @@ public class MessageParser {
             int cost;
             try {
                 cost = Integer.parseInt(link[1].trim());
-                if (cost <= 0) {
+                if (cost < 1 || cost > 65535) {
                     Logger.log(Logger.MENSAGEM_MALFORMADA,
-                            "LSA custo inválido (deve ser positivo): " + cost);
+                            "LSA custo fora do intervalo (1 a 65535): " + cost);
                     return null;
                 }
             } catch (NumberFormatException e) {
@@ -191,8 +192,8 @@ public class MessageParser {
         int ttl;
         try {
             ttl = Integer.parseInt(parts[3].trim());
-            if (ttl < 0) {
-                Logger.log(Logger.MENSAGEM_MALFORMADA, "DATA TTL negativo: " + ttl);
+            if (ttl < 0 || ttl > 255) {
+                Logger.log(Logger.MENSAGEM_MALFORMADA, "DATA TTL fora do intervalo (0 a 255): " + ttl);
                 return null;
             }
         } catch (NumberFormatException e) {

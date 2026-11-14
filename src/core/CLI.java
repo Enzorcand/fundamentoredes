@@ -292,8 +292,8 @@ public class CLI implements Runnable {
         int newCost;
         try {
             newCost = Integer.parseInt(costStr);
-            if (newCost <= 0) {
-                System.out.println("[ERRO] Custo deve ser um inteiro positivo (> 0).");
+            if (newCost < 1 || newCost > 65535) {
+                System.out.println("[ERRO] Custo deve estar entre 1 e 65535.");
                 return;
             }
         } catch (NumberFormatException e) {
@@ -355,8 +355,8 @@ public class CLI implements Runnable {
         int cost;
         try {
             cost = Integer.parseInt(costStr);
-            if (cost <= 0) {
-                System.out.println("[ERRO] Custo deve ser um inteiro positivo (> 0).");
+            if (cost < 1 || cost > 65535) {
+                System.out.println("[ERRO] Custo deve estar entre 1 e 65535.");
                 return;
             }
         } catch (NumberFormatException e) {

@@ -96,6 +96,39 @@ public class TestDijkstra {
         table.update(routesAfterNodeDown);
         assertFalse(routesAfterNodeDown.containsKey("192.168.1.3"), "Rota para 192.168.1.3 deve ter sido removida");
 
+        System.out.println("\n--- Teste de Desempate por Menor IP de Próximo Salto (Adendo 159) ---");
+        LSDB tieLsdb = new LSDB();
+        // 192.168.1.1 ligado a 192.168.1.10 (custo 10) e 192.168.1.2 (custo 10)
+        Map<String, Integer> l1 = new HashMap<>();
+        l1.put("192.168.1.10", 10);
+        l1.put("192.168.1.2", 10);
+        tieLsdb.accept("192.168.1.1", 1, l1);
+
+        Map<String, Integer> l10 = new HashMap<>();
+        l10.put("192.168.1.1", 10);
+        l10.put("192.168.1.50", 5);
+        tieLsdb.accept("192.168.1.10", 1, l10);
+
+        Map<String, Integer> l2 = new HashMap<>();
+        l2.put("192.168.1.1", 10);
+        l2.put("192.168.1.50", 5);
+        tieLsdb.accept("192.168.1.2", 1, l2);
+
+        Map<String, Integer> l50 = new HashMap<>();
+        l50.put("192.168.1.10", 5);
+        l50.put("192.168.1.2", 5);
+        tieLsdb.accept("192.168.1.50", 1, l50);
+
+        Set<String> tieActive = new HashSet<>(Arrays.asList("192.168.1.10", "192.168.1.2"));
+        DijkstraRouter tieRouter = new DijkstraRouter("192.168.1.1", tieLsdb);
+        Map<String, RoutingEntry> tieRoutes = tieRouter.computeRoutes(tieActive);
+
+        RoutingEntry r50 = tieRoutes.get("192.168.1.50");
+        assertNotNull(r50, "Rota para 192.168.1.50 deve existir");
+        assertEquals(15, r50.getTotalCost(), "Custo total deve ser 15");
+        // 192.168.1.2 < 192.168.1.10 numericamente (embora alfabeticamente "10" venha antes de "2")
+        assertEquals("192.168.1.2", r50.getNextHop(), "NextHop deve ser 192.168.1.2 (menor IP numérico)");
+
         System.out.println("\n>>> TODOS OS TESTES DO DIJKSTRA PASSARAM COM SUCESSO! <<<");
     }
 
