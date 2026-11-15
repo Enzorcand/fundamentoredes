@@ -73,6 +73,7 @@ public class Main {
 
         // 6. Número de sequência persistente
         SequenceNumberStore seqStore = new SequenceNumberStore(myIp);
+        state.setSeqStore(seqStore);
 
         // 7. Handlers e emissores do protocolo
         LSASender lsaSender = new LSASender(state, seqStore);

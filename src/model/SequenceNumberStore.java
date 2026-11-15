@@ -35,6 +35,25 @@ public class SequenceNumberStore {
 
     public synchronized int nextAndSave() {
         currentSeq++;
+        save();
+        return currentSeq;
+    }
+
+    /**
+     * Adendo: ao receber o próprio LSA com sequência maior que a atual, avança a
+     * sequência local até ela e grava em seq.txt. O próximo nextAndSave() gera newSeq + 1.
+     */
+    public synchronized void advanceTo(int newSeq) {
+        if (newSeq > currentSeq) {
+            int old = currentSeq;
+            currentSeq = newSeq;
+            save();
+            Logger.log(Logger.SEQ_SALTADA, "Sequência própria " + old + " -> " + currentSeq
+                    + " (recebido LSA próprio antigo com SEQ maior); próximo LSA terá SEQ=" + (currentSeq + 1));
+        }
+    }
+
+    private void save() {
         try {
             Files.write(filePath,
                     String.valueOf(currentSeq).getBytes(),
@@ -44,7 +63,6 @@ public class SequenceNumberStore {
             Logger.log(Logger.ERRO, "Falha ao guardar sequência " + currentSeq
                     + " em " + filePath + ": " + e.getMessage());
         }
-        return currentSeq;
     }
 
     public synchronized int getCurrent() {

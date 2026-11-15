@@ -40,9 +40,12 @@ public class TestParser {
         System.out.println("--- Casos malformados ---");
         MessageParser.parseHello("@");
         MessageParser.parseLSA("#192.168.1.1;0*192.168.1.2;10");
+        MessageParser.parseLSA("#192.168.1.1;2147483648*192.168.1.2;10"); // seq > 2147483647
         MessageParser.parseLSA("#192.168.1.1;1*192.168.1.2;-5");
+        MessageParser.parseLSA("#192.168.1.1;1*192.168.1.2;65536"); // cost > 65535
         MessageParser.parseData("!192.168.1.1;192.168.1.7;abc;8;msg");
         MessageParser.parseData("!192.168.1.1;192.168.1.7;1;-1;msg");
+        MessageParser.parseData("!192.168.1.1;192.168.1.7;1;256;msg"); // ttl > 255
 
         System.out.println("\nTipo desconhecido: " + MessageType.fromRaw("XPTO"));
         System.out.println("\n>>> Teste do Parser concluído com sucesso! <<<");

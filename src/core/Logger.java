@@ -52,6 +52,7 @@ public class Logger {
     public static final String ENLACE_DESATIVADO    = "ENLACE_DESATIVADO";
     public static final String CUSTO_ALTERADO       = "CUSTO_ALTERADO";
     public static final String TESTE_LSA            = "TESTE_LSA";
+    public static final String SEQ_SALTADA          = "SEQ_SALTADA";
     public static final String ERRO                 = "ERRO";
 
     /** Eventos periódicos escondidos do terminal no modo silencioso. */

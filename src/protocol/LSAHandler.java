@@ -4,6 +4,7 @@ import core.Logger;
 import core.RouterState;
 import model.LSDB;
 import model.Neighbor;
+import model.SequenceNumberStore;
 import network.MessageParser;
 import network.UDPListener;
 import java.util.Map;
@@ -27,18 +28,32 @@ public class LSAHandler {
     public void handle(MessageParser.LSAMessage lsa, String senderIp) {
         LSDB lsdb = state.getLsdb();
 
+        // Adendo: o LSA é aceito de qualquer vizinho CONFIGURADO e habilitado,
+        // não só de vizinho ativo (evita perder a sincronização inicial).
+        // O flooding, mais abaixo, continua indo só para vizinhos ativos, e uma
+        // aresta só entra no Dijkstra se os LSAs das duas pontas a reconhecerem.
+        // Enlace desativado (comando disable): os LSAs desse vizinho são descartados.
         Neighbor sender = state.getNeighbor(senderIp);
-        if (sender == null || !sender.isActive()) {
+        if (sender == null || !sender.isEnabled()) {
             Logger.log(Logger.LSA_DESCARTADO,
                     lsa.originIp + " | SEQ=" + lsa.sequenceNumber
-                            + " | Remetente " + senderIp + " não é vizinho activo");
+                            + " | Remetente " + senderIp + " não é vizinho configurado/habilitado");
             return;
         }
 
+        // LSA com o próprio IP de origem: descartado, sem processar nem encaminhar.
+        // Adendo: se a sequência recebida for MAIOR que a atual (resto de uma execução
+        // anterior ainda circulando na rede), salta a sequência local para ela; o
+        // próximo LSA, gerado imediatamente, terá sequência maior e substituirá o antigo.
         if (lsa.originIp.equals(state.getMyIp())) {
+            SequenceNumberStore seqStore = state.getSeqStore();
+            if (seqStore != null && lsa.sequenceNumber > seqStore.getCurrent()) {
+                seqStore.advanceTo(lsa.sequenceNumber);
+                state.notifyNeighborStateChange(); // gera e divulga novo LSA agora
+            }
             Logger.log(Logger.LSA_DESCARTADO,
                     lsa.originIp + " | SEQ=" + lsa.sequenceNumber
-                            + " | LSA próprio reflectido — descartado");
+                            + " | LSA próprio recebido — descartado sem encaminhar");
             return;
         }
 

@@ -49,9 +49,13 @@ public class LSDB {
 
     /**
      * Regista uma nova versão do LSA de originIp.
+     * Versões duplicadas ou antigas (seq <= maior já aceite) são ignoradas.
      * @return true se a topologia mudou (registo novo ou enlaces/custos diferentes).
      */
     public synchronized boolean accept(String originIp, int seq, Map<String, Integer> links) {
+        if (seq <= maxSeqSeen.getOrDefault(originIp, 0)) {
+            return false; // duplicado/antigo: não altera a LSDB nem renova a validade
+        }
         maxSeqSeen.put(originIp, seq);
         LSAEntry existing = entries.get(originIp);
         if (existing == null) {

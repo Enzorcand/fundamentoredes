@@ -15,6 +15,7 @@ public class MessageParser {
     public static final int MIN_COST = 1;
     public static final int MAX_COST = 65535;
     public static final int MAX_TTL  = 255;
+    public static final int MAX_SEQ  = Integer.MAX_VALUE; // 2147483647
 
     public static class HelloMessage {
         public final String originIp;
@@ -123,11 +124,13 @@ public class MessageParser {
 
         int seq;
         try {
-            seq = Integer.parseInt(header[1].trim());
-            if (seq < 1) {
-                Logger.log(Logger.MENSAGEM_MALFORMADA, "LSA com sequência inválida: " + seq);
+            long s = Long.parseLong(header[1].trim());
+            if (s < 1 || s > MAX_SEQ) {
+                Logger.log(Logger.MENSAGEM_MALFORMADA,
+                        "LSA com sequência fora do intervalo (1 a " + MAX_SEQ + "): " + s);
                 return null;
             }
+            seq = (int) s;
         } catch (NumberFormatException e) {
             Logger.log(Logger.MENSAGEM_MALFORMADA, "LSA sequência não numérica: '" + header[1] + "'");
             return null;
