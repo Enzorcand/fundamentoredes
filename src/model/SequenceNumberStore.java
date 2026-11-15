@@ -44,12 +44,12 @@ public class SequenceNumberStore {
      * sequência local até ela e grava em seq.txt. O próximo nextAndSave() gera newSeq + 1.
      */
     public synchronized void advanceTo(int newSeq) {
-        if (newSeq > currentSeq) {
+        if (newSeq >= currentSeq) {
             int old = currentSeq;
             currentSeq = newSeq;
             save();
             Logger.log(Logger.SEQ_SALTADA, "Sequência própria " + old + " -> " + currentSeq
-                    + " (recebido LSA próprio antigo com SEQ maior); próximo LSA terá SEQ=" + (currentSeq + 1));
+                    + " (recebido LSA próprio com SEQ maior/igual); próximo LSA terá SEQ=" + (currentSeq + 1));
         }
     }
 
