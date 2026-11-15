@@ -58,10 +58,18 @@ public class LSAHandler {
         }
 
         if (!lsdb.isNewer(lsa.originIp, lsa.sequenceNumber)) {
+            int maxSeen = getMaxSeen(lsdb, lsa.originIp);
             Logger.log(Logger.LSA_DESCARTADO,
                     lsa.originIp + " | SEQ=" + lsa.sequenceNumber
-                            + " | Duplicado/Antigo — descartado (max_visto="
-                            + getMaxSeen(lsdb, lsa.originIp) + ")");
+                            + " | Duplicado/Antigo — descartado (max_visto=" + maxSeen + ")");
+
+            // O próprio vizinho anunciou um LSA dele com sequência MENOR que a já vista:
+            // ele reiniciou e perdeu o seq.txt. Devolvemos a versão mais recente para que
+            // ele aplique a regra do adendo (saltar a sequência ao receber o próprio LSA
+            // com número maior). Sem isso, os LSAs dele seriam descartados indefinidamente.
+            if (lsa.sequenceNumber < maxSeen && lsa.originIp.equals(senderIp)) {
+                sendNewerCopyToOrigin(lsdb, lsa.originIp, maxSeen);
+            }
             return;
         }
 
@@ -108,6 +116,33 @@ public class LSAHandler {
             sb.append("*").append(link.getKey()).append(";").append(link.getValue());
         }
         return sb.toString();
+    }
+
+    /**
+     * Envia ao roteador de origem o seu LSA com a maior sequência já vista.
+     * Se o registo ainda está na LSDB, reenvia-o tal como está; se já expirou,
+     * envia só o cabeçalho (#ORIGEM;SEQ) — o destino descarta o conteúdo do próprio
+     * LSA e usa apenas o número de sequência para saltar.
+     */
+    private void sendNewerCopyToOrigin(LSDB lsdb, String originIp, int maxSeen) {
+        StringBuilder sb = new StringBuilder("#");
+        sb.append(originIp).append(";").append(maxSeen);
+        model.LSAEntry stored = lsdb.get(originIp);
+        if (stored != null && stored.getSequenceNumber() == maxSeen) {
+            for (Map.Entry<String, Integer> link : stored.getLinks().entrySet()) {
+                sb.append("*").append(link.getKey()).append(";").append(link.getValue());
+            }
+        }
+        byte[] data = sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        if (data.length > UDPListener.MAX_SIZE) return;
+        try {
+            java.net.InetAddress addr = java.net.InetAddress.getByName(originIp);
+            state.getSocket().send(new java.net.DatagramPacket(data, data.length, addr, UDPListener.PORT));
+            Logger.log(Logger.LSA_ENCAMINHADO, originIp,
+                    "SEQ=" + maxSeen + " | versão mais recente devolvida à origem (ela anunciou SEQ menor)");
+        } catch (java.io.IOException e) {
+            Logger.log(Logger.ERRO, "Falha ao devolver LSA a " + originIp + ": " + e.getMessage());
+        }
     }
 
     private int getMaxSeen(LSDB lsdb, String originIp) {
