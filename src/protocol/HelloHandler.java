@@ -5,12 +5,6 @@ import core.RouterState;
 import model.Neighbor;
 import network.MessageParser;
 
-/**
- * Lógica de processamento de mensagens HELLO recebidas.
- *
- * Um enlace fica ativo quando o HELLO vem de um vizinho configurado (e habilitado)
- * e o nosso IP aparece na lista de vizinhos desse HELLO (configuração mútua).
- */
 public class HelloHandler {
 
     private final RouterState state;
@@ -43,9 +37,6 @@ public class HelloHandler {
                 neighbor.setActive(true);
                 Logger.log(Logger.VIZINHO_ATIVO, hello.originIp,
                         "Vizinhança estabelecida (bidirecional)");
-                // Ordem importa: primeiro HELLO imediato + sincronização da LSDB
-                // (para o vizinho já nos considerar ativo e aceitar os LSAs),
-                // depois a geração do nosso novo LSA com o enlace incluído.
                 state.notifyNewNeighborActive(hello.originIp);
                 state.notifyNeighborStateChange();
             }

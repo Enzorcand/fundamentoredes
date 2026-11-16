@@ -9,9 +9,6 @@ import network.MessageParser;
 import network.UDPListener;
 import java.util.Map;
 
-/**
- * Lógica de processamento de LSAs recebidos e flooding.
- */
 public class LSAHandler {
 
     private final RouterState state;
@@ -28,11 +25,6 @@ public class LSAHandler {
     public void handle(MessageParser.LSAMessage lsa, String senderIp) {
         LSDB lsdb = state.getLsdb();
 
-        // Adendo: o LSA é aceito de qualquer vizinho CONFIGURADO e habilitado,
-        // não só de vizinho ativo (evita perder a sincronização inicial).
-        // O flooding, mais abaixo, continua indo só para vizinhos ativos, e uma
-        // aresta só entra no Dijkstra se os LSAs das duas pontas a reconhecerem.
-        // Enlace desativado (comando disable): os LSAs desse vizinho são descartados.
         Neighbor sender = state.getNeighbor(senderIp);
         if (sender == null || !sender.isEnabled()) {
             Logger.log(Logger.LSA_DESCARTADO,
@@ -41,15 +33,11 @@ public class LSAHandler {
             return;
         }
 
-        // LSA com o próprio IP de origem: descartado, sem processar nem encaminhar.
-        // Adendo: se a sequência recebida for MAIOR que a atual (resto de uma execução
-        // anterior ainda circulando na rede), salta a sequência local para ela; o
-        // próximo LSA, gerado imediatamente, terá sequência maior e substituirá o antigo.
         if (lsa.originIp.equals(state.getMyIp())) {
             SequenceNumberStore seqStore = state.getSeqStore();
             if (seqStore != null && lsa.sequenceNumber > seqStore.getCurrent()) {
                 seqStore.advanceTo(lsa.sequenceNumber);
-                state.notifyNeighborStateChange(); // gera e divulga novo LSA agora
+                state.notifyNeighborStateChange();
             }
             Logger.log(Logger.LSA_DESCARTADO,
                     lsa.originIp + " | SEQ=" + lsa.sequenceNumber
@@ -63,10 +51,6 @@ public class LSAHandler {
                     lsa.originIp + " | SEQ=" + lsa.sequenceNumber
                             + " | Duplicado/Antigo — descartado (max_visto=" + maxSeen + ")");
 
-            // O próprio vizinho anunciou um LSA dele com sequência MENOR que a já vista:
-            // ele reiniciou e perdeu o seq.txt. Devolvemos a versão mais recente para que
-            // ele aplique a regra do adendo (saltar a sequência ao receber o próprio LSA
-            // com número maior). Sem isso, os LSAs dele seriam descartados indefinidamente.
             if (lsa.sequenceNumber < maxSeen && lsa.originIp.equals(senderIp)) {
                 sendNewerCopyToOrigin(lsdb, lsa.originIp, maxSeen);
             }
@@ -118,12 +102,6 @@ public class LSAHandler {
         return sb.toString();
     }
 
-    /**
-     * Envia ao roteador de origem o seu LSA com a maior sequência já vista.
-     * Se o registo ainda está na LSDB, reenvia-o tal como está; se já expirou,
-     * envia só o cabeçalho (#ORIGEM;SEQ) — o destino descarta o conteúdo do próprio
-     * LSA e usa apenas o número de sequência para saltar.
-     */
     private void sendNewerCopyToOrigin(LSDB lsdb, String originIp, int maxSeen) {
         StringBuilder sb = new StringBuilder("#");
         sb.append(originIp).append(";").append(maxSeen);

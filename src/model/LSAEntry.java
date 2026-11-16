@@ -4,11 +4,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Registo de um LSA (Link State Advertisement) armazenado na LSDB:
- * IP de origem, número de sequência, enlaces anunciados e instante de
- * recebimento da versão válida.
- */
 public class LSAEntry {
 
     public static final long VALIDITY_MS = 30_000L;
@@ -34,14 +29,12 @@ public class LSAEntry {
     public Map<String, Integer> getLinks() { return Collections.unmodifiableMap(links); }
     public long getReceivedAt() { return receivedAt; }
 
-    /** Só é chamado pela LSDB, sob o seu lock. */
     void update(int sequenceNumber, Map<String, Integer> links) {
         this.sequenceNumber = sequenceNumber;
         this.links = new LinkedHashMap<>(links);
         this.receivedAt = System.currentTimeMillis();
     }
 
-    /** Cópia independente, usada pela LSDB para entregar snapshots a outras threads. */
     LSAEntry copy() {
         return new LSAEntry(originIp, sequenceNumber, links, receivedAt);
     }
