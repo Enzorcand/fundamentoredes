@@ -1,29 +1,24 @@
-# Fundamentos de Redes - Trabalho Final
+# Protocolo de Roteamento Link State (OSPF-like)
 
-## Objetivo
-Desenvolver uma aplicação que implemente um protocolo de roteamento do tipo Link State, inspirado no OSPF.
+Implementação de um protocolo de roteamento distribuído do tipo **Link State** inspirado no OSPF, desenvolvido em **Java** com comunicação via **sockets UDP na porta 6000**.
 
-## Requisitos Principais
+Cada nó atua como um roteador autônomo: descobre vizinhos via mensagens periódicas, dissemina o estado dos seus enlaces (flooding de LSAs), mantém uma base de topologia global (LSDB), calcula caminhos mínimos pelo algoritmo de **Dijkstra** (implementado manualmente) e encaminha mensagens de dados (DATA).
 
-### Funcionalidades
-- Cada computador atua como um roteador
-- Identificação de vizinhos
-- Divulgação do estado de enlaces (LSA)
-- Manutenção de base de dados da topologia (LSDB)
-- Cálculo de caminhos de menor custo pelo algoritmo de Dijkstra
-- Encaminhamento de mensagens entre roteadores
+---
 
-### Especificações Técnicas
-- **Protocolo**: UDP, porta 6000
-- **Codificação**: UTF-8
-- **Tamanho máximo dos pacotes**: 1200 bytes
-- **Identificadores**: IPv4
+## 📋 Sumário
+- [Pré-requisitos](#-pré-requisitos)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Configuração de Vizinhos (`roteadores.txt`)](#-configuração-de-vizinhos-roteadorestxt)
+- [Como Compilar](#-como-compilar)
+- [Como Executar](#-como-executar)
+- [Comandos da Interface Interativa (CLI)](#-comandos-da-interface-interativa-cli)
+- [Como Executar os Testes Automatizados](#-como-executar-os-testes-automatizados)
+- [Testes Manuais de Comunicação UDP](#-testes-manuais-de-comunicação-udp)
+- [Especificação das Mensagens](#-especificação-das-mensagens)
 
-## Estrutura das Mensagens
+---
 
-<<<<<<< Updated upstream
-### 1. HELLO
-=======
 ## 💻 Pré-requisitos
 
 - **Java JDK 11** ou superior instalado (`javac -version` e `java -version`).
@@ -74,20 +69,20 @@ fundamentoredes/
     ├── TestData.java                # Roteamento de DATA, decremento de TTL e descartes
     ├── TestCLI.java                 # Simulação de comandos da CLI
     └── TestSync.java                # Teste de sincronização inicial da LSDB
->>>>>>> Stashed changes
 ```
-@IP_ORIGEM*VIZINHO1*VIZINHO2*...
-@192.168.1.1*192.168.1.2*192.168.1.3
-```
-- Enviado a cada 5 segundos
-- Usado para descoberta e manutenção de vizinhança
 
-<<<<<<< Updated upstream
-### 2. LSA (Link State Advertisement)
+---
+
+## ⚙️ Configuração de Vizinhos (`roteadores.txt`)
+
+Na inicialização, o roteador lê o arquivo `roteadores.txt` na raiz da pasta. Cada linha define o IP de um vizinho e o custo do enlace para alcançá-lo (separados por ponto e vírgula):
+
+```text
+192.168.1.2;10
+192.168.1.3;5
+192.168.1.4;20
 ```
-#IP_ORIGEM;SEQUENCIA*VIZINHO1;CUSTO*VIZINHO2;CUSTO
-#192.168.1.1;25*192.168.1.2;10*192.168.1.3;5
-=======
+
 > **Regras:**
 > - Os custos são inteiros positivos (`> 0`).
 > - Linhas em branco ou iniciadas por `#` são ignoradas.
@@ -119,18 +114,8 @@ Execute o comando passando o **endereço IPv4** deste roteador como argumento:
 **Linux / macOS:**
 ```bash
 java -cp out Main 192.168.1.1
->>>>>>> Stashed changes
 ```
-- Gerado a cada 10 segundos ou quando há alteração
-- Número de sequência incrementado a cada novo LSA
-- Propagado por flooding
 
-<<<<<<< Updated upstream
-### 3. DATA
-```
-!IP_ORIGEM;IP_DESTINO;ID;TTL;MENSAGEM
-!192.168.1.1;192.168.1.7;1001;8;Olá pessoal!
-=======
 **Windows:**
 ```powershell
 java -Dfile.encoding=UTF-8 -cp out Main 192.168.1.1
@@ -155,10 +140,10 @@ Durante a execução do roteador, você pode digitar comandos diretamente no ter
 
 | Comando | Descrição | Exemplo |
 |---|---|---|
-| `send <IP> <mensagem>` | Envia DATA com TTL padrão (16) | `send 192.168.1.3 Olá vizinho!` |
-| `send <IP> <TTL> <mensagem>` | Envia DATA com TTL customizado (0–255) | `send 192.168.1.3 5 Olá vizinho!` |
+| `send <IP> <mensagem>` | Envia DATA com TTL padrão (16) | `send 192.168.1.3 Ola vizinho!` |
+| `send <IP> <TTL> <mensagem>` | Envia DATA com TTL customizado (0-255) | `send 192.168.1.3 5 Ola vizinho!` |
 
-> O **roteador de origem** envia com o TTL informado **sem decrementá-lo**. Apenas roteadores intermediários decrementam o TTL. Um caminho com *k* saltos intermediários exige TTL ≥ *k*.
+> O **roteador de origem** envia com o TTL informado **sem decrementá-lo**. Apenas roteadores intermediários decrementam o TTL. Um caminho com *k* saltos intermediários exige TTL >= *k*.
 
 ### Gerenciamento de Vizinhos
 
@@ -182,8 +167,8 @@ Durante a execução do roteador, você pode digitar comandos diretamente no ter
 
 | Comando | Descrição | Exemplo |
 |---|---|---|
-| `testlsa <origem> <vizinho> dup` | Reenvia o LSA armazenado de `<origem>` para `<vizinho>` com a **sequência original** (simula duplicado) | `testlsa 192.168.1.2 192.168.1.3 dup` |
-| `testlsa <origem> <vizinho> old` | Reenvia o LSA armazenado de `<origem>` para `<vizinho>` com **sequência – 1** (simula antigo) | `testlsa 192.168.1.2 192.168.1.3 old` |
+| `testlsa <origem> <vizinho> dup` | Reenvia o LSA armazenado de `<origem>` para `<vizinho>` com a **sequencia original** (simula duplicado) | `testlsa 192.168.1.2 192.168.1.3 dup` |
+| `testlsa <origem> <vizinho> old` | Reenvia o LSA armazenado de `<origem>` para `<vizinho>` com **sequencia - 1** (simula antigo) | `testlsa 192.168.1.2 192.168.1.3 old` |
 
 ### Outros
 
@@ -192,7 +177,7 @@ Durante a execução do roteador, você pode digitar comandos diretamente no ter
 | `help` | Exibe o menu de ajuda com todos os comandos |
 | `quit` / `exit` | Encerra a execução do roteador de forma limpa |
 
-> 💡 **Dica interativa:** Se você digitar apenas `send`, `cost`, `disable`, `enable`, `addneighbor`, `removeneighbor` ou `testlsa` sem parâmetros, a CLI solicitará interativamente cada dado necessário.
+> **Dica interativa:** Se você digitar apenas `send`, `cost`, `disable`, `enable`, `addneighbor`, `removeneighbor` ou `testlsa` sem parametros, a CLI solicitara interativamente cada dado necessario.
 
 ---
 
@@ -210,24 +195,24 @@ javac -encoding UTF-8 -cp out -d out $(find test -name "*.java")
 javac -encoding UTF-8 -cp src -d out test\*.java
 ```
 
-### 2. Executar cada suíte de testes
+### 2. Executar cada suite de testes
 
-- **Teste de Dijkstra e Grafo:** Valida caminho mínimo com múltiplos saltos, descarte de arestas unidirecionais, filtragem por vizinhos ativos, detecção de renovação sem mudança e detecção de rotas adicionadas/modificadas/removidas:
+- **Teste de Dijkstra e Grafo:** Valida caminho minimo com multiplos saltos, descarte de arestas unidirecionais, filtragem por vizinhos ativos, deteccao de renovacao sem mudanca e deteccao de rotas adicionadas/modificadas/removidas:
   ```bash
   java -Dfile.encoding=UTF-8 -cp out TestDijkstra
   ```
 
-- **Teste de Mensagens DATA:** Valida recebimento local, encaminhamento por salto, decremento de TTL por roteadores intermediários, descarte por TTL expirado e descarte por ausência de rota:
+- **Teste de Mensagens DATA:** Valida recebimento local, encaminhamento por salto, decremento de TTL por roteadores intermediarios, descarte por TTL expirado e descarte por ausencia de rota:
   ```bash
   java -Dfile.encoding=UTF-8 -cp out TestData
   ```
 
-- **Teste da CLI:** Simula comandos de alteração de custo, ativação/desativação de enlace e geração de eventos:
+- **Teste da CLI:** Simula comandos de alteracao de custo, ativacao/desativacao de enlace e geracao de eventos:
   ```bash
   java -Dfile.encoding=UTF-8 -cp out TestCLI
   ```
 
-- **Teste do Parser de Mensagens:** Valida decodificação sintática e descarte de formatos malformados:
+- **Teste do Parser de Mensagens:** Valida decodificacao sintatica e descarte de formatos malformados:
   ```bash
   java -Dfile.encoding=UTF-8 -cp out TestParser
   ```
@@ -236,107 +221,36 @@ javac -encoding UTF-8 -cp src -d out test\*.java
 
 ## 📡 Testes Manuais de Comunicação UDP
 
-Com o roteador em execução em um terminal, você pode injetar datagramas de teste a partir de outro terminal usando `nc` (Netcat) ou Python:
+Com o roteador em execucao em um terminal, voce pode injetar datagramas de teste a partir de outro terminal usando `nc` (Netcat):
 
 ### Simular recebimento de HELLO bidirecional:
 ```bash
-# Envia HELLO de 192.168.1.2 informando que nos conhece (192.168.1.1)
 echo -n "@192.168.1.2*192.168.1.1" | nc -u -w1 127.0.0.1 6000
->>>>>>> Stashed changes
 ```
-- TTL inicial: 16
-- ID único por origem
-- Encaminhado conforme tabela de roteamento
 
-## Temporizadores
-- **HELLO**: 5 segundos
-- **LSA periódico**: 10 segundos
-- **Timeout vizinho**: 15 segundos
-- **Expiração LSA**: 30 segundos
+### Simular recebimento de LSA:
+```bash
+echo -n "#192.168.1.2;1*192.168.1.1;10" | nc -u -w1 127.0.0.1 6000
+```
 
-## Arquivos de Configuração
-- `roteadores.txt`: Lista de vizinhos e custos (formato: IP;CUSTO)
-- Arquivo de persistência: Último número de sequência
+### Simular recebimento de mensagem DATA:
+```bash
+echo -n "!192.168.1.2;192.168.1.1;1001;16;Mensagem de teste" | nc -u -w1 127.0.0.1 6000
+```
 
-## Cenários de Teste
-A. Convergência inicial da rede
-B. Entrada de um novo roteador
-C. Falha de um enlace
-D. Falha de um roteador
-E. Recuperação após falha
-F. Recebimento de LSAs antigos e duplicados
-G. Alteração do custo de um enlace
-H. Encaminhamento de DATA com TTL insuficiente
+> **Atencao:** O parametro `-n` do `echo` e fundamental para **nao** enviar quebra de linha (`\n`), que e estritamente proibida pelo protocolo.
 
-## Comandos Interativos
-- Consultar LSDB
-- Consultar tabela de roteamento
-- Ativar/desativar enlaces lógicos
-- Alterar custos de enlaces
-- Enviar mensagens DATA
+---
 
-## Log de Eventos
-- HELLO_RECEBIDO
-- LSA_ACEITO
-- DIJKSTRA_EXECUTADO
-- DATA_ENCAMINHADA
-- DATA_RECEBIDO
+## 📑 Especificação das Mensagens
 
-<<<<<<< Updated upstream
-## Entrega
-- Data: 18/11
-- Código-fonte
-- Relatório em PDF
-- Capturas do Wireshark (.pcap/.pcapng)
-
-## Plano de Desenvolvimento
-
-### Fase 1: Estrutura Básica
-1. Definir arquitetura e escolher linguagem (Python recomendado)
-2. Criar estrutura de diretórios
-3. Implementar leitura do arquivo roteadores.txt
-4. Implementar comunicação UDP (porta 6000)
-
-### Fase 2: Descoberta de Vizinhos
-5. Implementar mensagem HELLO (envio a cada 5s)
-6. Implementar detecção de vizinhos ativos (timeout 15s)
-7. Implementar sistema de logging básico
-
-### Fase 3: LSDB e LSAs
-8. Implementar estrutura LSDB (Link State Database)
-9. Implementar geração de LSA (a cada 10s e em mudanças)
-10. Implementar persistência de número de sequência
-
-### Fase 4: Flooding e Sincronização
-11. Implementar flooding de LSAs
-12. Implementar validação e sincronização de LSAs
-13. Implementar expiração de LSAs (30s)
-
-### Fase 5: Roteamento
-14. Implementar algoritmo de Dijkstra (sem biblioteca)
-15. Implementar tabela de roteamento
-16. Implementar atualização de rotas
-
-### Fase 6: Encaminhamento de Mensagens
-17. Implementar mensagem DATA (encaminhamento)
-18. Implementar TTL e descarte de mensagens
-
-### Fase 7: Interface Interativa
-19. Implementar comandos interativos (ativar/desativar enlaces, alterar custos)
-20. Implementar comandos de consulta (LSDB, tabela de roteamento)
-
-### Fase 8: Testes e Documentação
-21. Criar testes com cenários A-H
-22. Capturar tráfego com Wireshark
-23. Preparar relatório técnico
-=======
-| Tipo | Prefixo | Formato | Descrição |
+| Tipo | Prefixo | Formato | Descricao |
 |---|---|---|---|
-| **HELLO** | `@` | `@IP_ORIGEM*VIZ1*VIZ2*...` | Enviado a cada **5s** a todos os vizinhos habilitados. Adjacência estabelecida apenas com bidirecionalidade confirmada. Timeout de inatividade: **15s**. |
-| **LSA** | `#` | `#IP_ORIGEM;SEQ*VIZ1;CUSTO*...` | Gerado a cada **10s** ou em mudanças topológicas. Número de sequência persistido em **`seq.txt`** (continua do valor salvo + 1 após reinício). LSA com próprio IP é descartado. Expira após **30s**. |
-| **DATA** | `!` | `!IP_ORIG;IP_DEST;ID;TTL;MSG` | TTL inicial configurável pelo usuário (**0–255**, padrão **16**). A **origem envia sem decrementar**; apenas roteadores intermediários decrementam. Descartado se TTL = 0 ou sem rota. O próximo salto é sempre um **vizinho ativo**. |
+| **HELLO** | `@` | `@IP_ORIGEM*VIZ1*VIZ2*...` | Enviado a cada **5s** a todos os vizinhos habilitados. Adjacencia estabelecida apenas com bidirecionalidade confirmada. Timeout de inatividade: **15s**. |
+| **LSA** | `#` | `#IP_ORIGEM;SEQ*VIZ1;CUSTO*...` | Gerado a cada **10s** ou em mudancas topologicas. Numero de sequencia persistido em **`seq.txt`** (continua do valor salvo + 1 apos reinicio). LSA com proprio IP e descartado. Expira apos **30s**. |
+| **DATA** | `!` | `!IP_ORIG;IP_DEST;ID;TTL;MSG` | TTL inicial configuravel pelo usuario (**0-255**, padrao **16**). A **origem envia sem decrementar**; apenas roteadores intermediarios decrementam. Descartado se TTL = 0 ou sem rota. O proximo salto e sempre um **vizinho ativo**. |
 
-Todos os pacotes trafegam sobre **UDP**, porta **6000**, codificados em **UTF-8**, com tamanho máximo de **1200 bytes** e **sem quebra de linha** ao final.
+Todos os pacotes trafegam sobre **UDP**, porta **6000**, codificados em **UTF-8**, com tamanho maximo de **1200 bytes** e **sem quebra de linha** ao final.
 
 ---
 
@@ -345,15 +259,14 @@ Todos os pacotes trafegam sobre **UDP**, porta **6000**, codificados em **UTF-8*
 | Componente | Comportamento |
 |---|---|
 | **HELLO** | Enviado a cada 5s. Apenas vizinhos **configurados e habilitados** recebem. |
-| **Enlace ativo** | Requer HELLO bidirecional (nós estamos no HELLO do vizinho **e** ele está no nosso). |
-| **Enlace desativado** | Não envia HELLO, **descarta** HELLOs e LSAs recebidos desse vizinho. |
-| **LSA gerado** | A cada 10s ou em mudanças. Sequência salva em `seq.txt` antes do envio. |
-| **LSA recebido** | Aceito apenas se vier de vizinho ativo e tiver sequência maior que a máxima vista. LSA com próprio IP é descartado. |
-| **Flooding** | LSA novo encaminhado a todos os vizinhos ativos, exceto o remetente. Ao estabelecer nova vizinhança, sincroniza toda a LSDB. |
-| **Expiração LSA** | LSAs remotos expiram após 30s sem renovação. A maior sequência vista por origem é mantida mesmo após expiração. |
-| **Dijkstra** | Executado quando a topologia muda. Renovação periódica sem mudança **não** dispara novo cálculo. O próximo salto é sempre um **vizinho ativo**. |
-| **DATA – origem** | Envia com TTL inicial (padrão 16, configurável 0–255) **sem decrementar**. |
-| **DATA – intermediário** | Verifica TTL > 0, decrementa e encaminha. Descarta se TTL = 0 ou sem rota. |
-| **addneighbor / removeneighbor** | Atualiza `roteadores.txt` em tempo real. Novo enlace só fica ativo após HELLO bidirecional. |
+| **Enlace ativo** | Requer HELLO bidirecional (nos estamos no HELLO do vizinho **e** ele esta no nosso). |
+| **Enlace desativado** | Nao envia HELLO, **descarta** HELLOs e LSAs recebidos desse vizinho. |
+| **LSA gerado** | A cada 10s ou em mudancas. Sequencia salva em `seq.txt` antes do envio. |
+| **LSA recebido** | Aceito apenas se vier de vizinho ativo e tiver sequencia maior que a maxima vista. LSA com proprio IP e descartado. |
+| **Flooding** | LSA novo encaminhado a todos os vizinhos ativos, exceto o remetente. Ao estabelecer nova vizinhanca, sincroniza toda a LSDB. |
+| **Expiracao LSA** | LSAs remotos expiram apos 30s sem renovacao. A maior sequencia vista por origem e mantida mesmo apos expiracao. |
+| **Dijkstra** | Executado quando a topologia muda. Renovacao periodica sem mudanca **nao** dispara novo calculo. O proximo salto e sempre um **vizinho ativo**. |
+| **DATA - origem** | Envia com TTL inicial (padrao 16, configuravel 0-255) **sem decrementar**. |
+| **DATA - intermediario** | Verifica TTL > 0, decrementa e encaminha. Descarta se TTL = 0 ou sem rota. |
+| **addneighbor / removeneighbor** | Atualiza `roteadores.txt` em tempo real. Novo enlace so fica ativo apos HELLO bidirecional. |
 | **testlsa** | Reenvia LSA da LSDB para teste: `dup` (seq original) ou `old` (seq - 1). |
->>>>>>> Stashed changes

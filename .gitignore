@@ -1,0 +1,13 @@
+# Compilação Java
+out/
+*.class
+
+# Ficheiros de estado em tempo de execução
+seq.txt
+roteador_*.log
+
+# SO / IDEs
+.DS_Store
+.vscode/
+.idea/
+*.iml
