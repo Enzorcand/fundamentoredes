@@ -5,7 +5,7 @@ import model.LSDB;
 import model.RoutingEntry;
 import java.util.*;
 
-/**
+/*
  * Cálculo de caminhos mínimos com algoritmo de Dijkstra:
  * - Aresta bidirecional: só existe se ambos os LSAs a anunciarem.
  * - Próximo salto deve ser vizinho ativo.
@@ -21,7 +21,7 @@ public class DijkstraRouter {
         this.lsdb = lsdb;
     }
 
-    /** Compara dois endereços IPv4 numericamente, octeto a octeto. */
+    // Compara dois endereços IPv4 numericamente, octeto a octeto.
     public static int compareIps(String ip1, String ip2) {
         if (ip1 == null && ip2 == null) return 0;
         if (ip1 == null) return 1;
@@ -44,9 +44,8 @@ public class DijkstraRouter {
         return ip1.compareTo(ip2);
     }
 
-    /**
+    /*
      * Calcula as rotas de menor custo a partir de myIp.
-     *
      * @param activeNeighborIps IPs dos vizinhos atualmente ativos (próximos saltos permitidos)
      */
     public Map<String, RoutingEntry> computeRoutes(Set<String> activeNeighborIps) {
@@ -56,8 +55,10 @@ public class DijkstraRouter {
             return Collections.emptyMap();
         }
 
-        // dist[v] = menor custo conhecido de myIp até v
-        // hops[v] = conjunto de próximos saltos (vizinhos diretos) que levam a v com esse custo
+        /*
+         * dist[v] = menor custo conhecido de myIp até v
+         * hops[v] = conjunto de próximos saltos (vizinhos diretos) que levam a v com esse custo
+         */
         Map<String, Long> dist = new HashMap<>();
         Map<String, Set<String>> hops = new HashMap<>();
         Set<String> unvisited = new HashSet<>(graph.keySet());
@@ -89,8 +90,10 @@ public class DijkstraRouter {
                 long alt = best + edge.getValue();
                 long current = dist.get(v);
 
-                // Se u é a própria origem, o próximo salto para v é o próprio v;
-                // senão, v herda os próximos saltos de u.
+                /*
+                 * Se u é a própria origem, o próximo salto para v é o próprio v;
+                 * senão, v herda os próximos saltos de u.
+                 */
                 Set<String> viaU = u.equals(myIp)
                         ? Collections.singleton(v)
                         : hops.get(u);
@@ -124,7 +127,7 @@ public class DijkstraRouter {
         return routes;
     }
 
-    /**
+    /*
      * Grafo dirigido: aresta u→v com o custo anunciado por u, incluída apenas
      * se o LSA de v também anunciar o enlace com u.
      */

@@ -7,7 +7,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-/**
+/*
  * Link State Database (LSDB).
  * Métodos sincronizados retornam snapshots para isolar leituras durante o Dijkstra e sincronização.
  */
@@ -17,7 +17,7 @@ public class LSDB {
             DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
     private final Map<String, LSAEntry> entries = new TreeMap<>();
-    /** Maior sequência já aceite por origem — mantida mesmo após a expiração do LSA. */
+    // Maior sequência já aceite por origem — mantida mesmo após a expiração do LSA.
     private final Map<String, Integer> maxSeqSeen = new HashMap<>();
 
     public synchronized boolean isNewer(String originIp, int seq) {
@@ -29,20 +29,20 @@ public class LSDB {
         return maxSeqSeen.getOrDefault(originIp, 0);
     }
 
-    /** Devolve cópia do registo (ou null), segura para uso fora do lock. */
+    // Devolve cópia do registo (ou null), segura para uso fora do lock.
     public synchronized LSAEntry get(String originIp) {
         LSAEntry e = entries.get(originIp);
         return e == null ? null : e.copy();
     }
 
-    /** Devolve cópias de todos os registos (snapshot). */
+    // Devolve cópias de todos os registos (snapshot).
     public synchronized List<LSAEntry> getAll() {
         List<LSAEntry> copy = new ArrayList<>(entries.size());
         for (LSAEntry e : entries.values()) copy.add(e.copy());
         return copy;
     }
 
-    /**
+    /*
      * Regista uma nova versão do LSA de originIp.
      * Versões duplicadas ou antigas (seq <= maior já aceite) são ignoradas.
      * @return true se a topologia mudou (registo novo ou enlaces/custos diferentes).
@@ -72,7 +72,7 @@ public class LSDB {
         entries.remove(originIp);
     }
 
-    /** Remove os LSAs expirados, exceto o LSA local (renovado pelo próprio roteador). */
+    // Remove os LSAs expirados, exceto o LSA local (renovado pelo próprio roteador).
     public synchronized List<String> removeExpired(String myIp) {
         List<String> expired = new ArrayList<>();
         Iterator<Map.Entry<String, LSAEntry>> it = entries.entrySet().iterator();

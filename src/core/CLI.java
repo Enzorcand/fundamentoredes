@@ -13,9 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Scanner;
 
-/**
- * Interface interativa de linha de comandos (CLI) na thread principal.
- */
+// Interface interativa de linha de comandos (CLI) na thread principal.
 public class CLI implements Runnable {
 
     private final RouterState state;
@@ -106,8 +104,10 @@ public class CLI implements Runnable {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // send <ip> [msg]
-    // send <ip> <ttl_opt> <msg>   (se 2.º token for inteiro 0-255 → é o TTL)
+    /*
+     * send <ip> [msg]
+     * send <ip> <ttl_opt> <msg>   (se 2.º token for inteiro 0-255 → é o TTL)
+     */
     // ─────────────────────────────────────────────────────────────────────────
     private void handleSend(String[] parts, Scanner scanner) {
         String destIp;
@@ -414,9 +414,11 @@ public class CLI implements Runnable {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // testlsa <origem> <vizinho> [dup|old]
-    //   dup  → reenvia com sequência original (duplicado)
-    //   old  → reenvia com sequência original - 1 (antigo)
+    /*
+     * testlsa <origem> <vizinho> [dup|old]
+     * dup  → reenvia com sequência original (duplicado)
+     * old  → reenvia com sequência original - 1 (antigo)
+     */
     // ─────────────────────────────────────────────────────────────────────────
     private void handleTestLsa(String[] parts, Scanner scanner) {
         String originIp;

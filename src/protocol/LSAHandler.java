@@ -9,9 +9,7 @@ import network.MessageParser;
 import network.UDPListener;
 import java.util.Map;
 
-/**
- * Lógica de processamento de LSAs recebidos e flooding.
- */
+// Lógica de processamento de LSAs recebidos e flooding.
 public class LSAHandler {
 
     private final RouterState state;
@@ -108,7 +106,7 @@ public class LSAHandler {
         return sb.toString();
     }
 
-    /** Devolve à origem o seu LSA com a maior sequência já vista para permitir recuperação. */
+    // Devolve à origem o seu LSA com a maior sequência já vista para permitir recuperação.
     private void sendNewerCopyToOrigin(LSDB lsdb, String originIp, int maxSeen) {
         StringBuilder sb = new StringBuilder("#");
         sb.append(originIp).append(";").append(maxSeen);

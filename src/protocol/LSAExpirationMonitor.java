@@ -4,9 +4,7 @@ import core.Logger;
 import core.RouterState;
 import java.util.List;
 
-/**
- * Thread de verificação periódica de expiração de LSAs na LSDB (30s).
- */
+// Thread de verificação periódica de expiração de LSAs na LSDB (30s).
 public class LSAExpirationMonitor implements Runnable {
 
     private static final int CHECK_INTERVAL_MS = 1_000;

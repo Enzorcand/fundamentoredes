@@ -4,7 +4,7 @@ import core.Logger;
 import java.io.IOException;
 import java.nio.file.*;
 
-/**
+/*
  * Persiste e recupera o número de sequência do LSA local.
  * Conforme enunciado: arquivo fixo "seq.txt"; ao reiniciar, continua do valor gravado + 1.
  */
@@ -39,7 +39,7 @@ public class SequenceNumberStore {
         return currentSeq;
     }
 
-    /** Avança a sequência local ao receber LSA próprio com sequência mais alta. */
+    // Avança a sequência local ao receber LSA próprio com sequência mais alta.
     public synchronized void advanceTo(int newSeq) {
         if (newSeq >= currentSeq) {
             int old = currentSeq;

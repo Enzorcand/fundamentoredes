@@ -1,8 +1,6 @@
 package network;
 
-/**
- * Contêiner imutável para uma mensagem UDP recebida.
- */
+// Contêiner imutável para uma mensagem UDP recebida.
 public class RawMessage {
 
     private final String raw;

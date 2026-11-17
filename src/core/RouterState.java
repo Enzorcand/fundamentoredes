@@ -10,7 +10,7 @@ import routing.DijkstraRouter;
 import java.net.DatagramSocket;
 import java.util.*;
 
-/**
+/*
  * Estado partilhado do roteador entre todas as threads.
  * O mapa de vizinhos é protegido por sincronização para permitir
  * adição e remoção em tempo de execução (addneighbor/removeneighbor).
@@ -51,7 +51,7 @@ public class RouterState {
     public SequenceNumberStore getSeqStore() { return seqStore; }
     public void setSeqStore(SequenceNumberStore seqStore) { this.seqStore = seqStore; }
 
-    /** Retorna snapshot imutável dos vizinhos (thread-safe para iteração). */
+    // Retorna snapshot imutável dos vizinhos (thread-safe para iteração).
     public synchronized Map<String, Neighbor> getNeighbors() {
         return Collections.unmodifiableMap(new LinkedHashMap<>(neighbors));
     }
@@ -60,12 +60,12 @@ public class RouterState {
         return neighbors.get(ip);
     }
 
-    /** Adiciona um vizinho configurado em tempo de execução. */
+    // Adiciona um vizinho configurado em tempo de execução.
     public synchronized void addNeighbor(Neighbor n) {
         neighbors.put(n.getIp(), n);
     }
 
-    /** Remove um vizinho configurado em tempo de execução. Retorna o vizinho removido ou null. */
+    // Remove um vizinho configurado em tempo de execução. Retorna o vizinho removido ou null.
     public synchronized Neighbor removeNeighbor(String ip) {
         return neighbors.remove(ip);
     }
@@ -86,7 +86,7 @@ public class RouterState {
         onNewNeighborActive.accept(neighborIp);
     }
 
-    /**
+    /*
      * Executa o Dijkstra e atualiza a tabela de roteamento.
      * Passa o conjunto de vizinhos ativos para garantir que o próximo salto
      * seja sempre um vizinho ativo (conforme enunciado).

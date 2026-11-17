@@ -11,9 +11,8 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
+/*
  * Gestor e encaminhador de mensagens de dados (Mensagem 3 - DATA).
- *
  * Conforme enunciado:
  * - O roteador de ORIGEM envia com o TTL inicial, SEM decrementá-lo.
  * - Roteadores INTERMEDIÁRIOS decrementam TTL antes de encaminhar.
@@ -31,7 +30,7 @@ public class DataHandler {
         this.state = state;
     }
 
-    /** Processa mensagem DATA recebida de outro roteador. */
+    // Processa mensagem DATA recebida de outro roteador.
     public void handleReceived(MessageParser.DataMessage data, String senderIp) {
         if (data.destIp.equals(state.getMyIp())) {
             System.out.println();
@@ -97,14 +96,12 @@ public class DataHandler {
         }
     }
 
-    /**
-     * Envia mensagem DATA com TTL padrão (16).
-     */
+    // Envia mensagem DATA com TTL padrão (16).
     public boolean sendMessage(String destIp, String message) {
         return sendMessage(destIp, message, INITIAL_TTL);
     }
 
-    /**
+    /*
      * Envia mensagem DATA com TTL customizado (0–255).
      * Conforme enunciado: a origem envia com o TTL inicial sem decrementá-lo.
      */

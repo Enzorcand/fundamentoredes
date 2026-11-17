@@ -1,10 +1,10 @@
 package network;
 
-/**
+/*
  * Tipos de mensagem do protocolo:
- *   '@' → HELLO
- *   '#' → LSA
- *   '!' → DATA
+ * '@' → HELLO
+ * '#' → LSA
+ * '!' → DATA
  */
 public enum MessageType {
     HELLO('@'),

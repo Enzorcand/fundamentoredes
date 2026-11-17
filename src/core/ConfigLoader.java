@@ -6,12 +6,10 @@ import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Leitura e escrita do ficheiro de configuração de vizinhos: roteadores.txt
- */
+// Leitura e escrita do ficheiro de configuração de vizinhos: roteadores.txt
 public class ConfigLoader {
 
-    /** Pode ser trocado com -Droteadores.file=... (usado pelos testes para não mexer no ficheiro real). */
+    // Pode ser trocado com -Droteadores.file=... (usado pelos testes para não mexer no ficheiro real).
     private static final String CONFIG_FILE = System.getProperty("roteadores.file", "roteadores.txt");
 
     public static Map<String, Neighbor> loadNeighbors() {
@@ -74,7 +72,7 @@ public class ConfigLoader {
         return neighbors;
     }
 
-    /**
+    /*
      * Persiste a lista atual de vizinhos configurados em roteadores.txt.
      * Chamado após addneighbor ou removeneighbor para manter o arquivo atualizado.
      */

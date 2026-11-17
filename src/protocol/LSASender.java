@@ -14,9 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 
-/**
- * Geração e envio periódico / imediato de LSAs.
- */
+// Geração e envio periódico / imediato de LSAs.
 public class LSASender implements Runnable {
 
     private static final int LSA_INTERVAL_MS = 10_000;
@@ -38,7 +36,7 @@ public class LSASender implements Runnable {
         this.onTopologyChanged = cb;
     }
 
-    /** Dispara a geração imediata de um novo LSA por alteração local de enlace ou custo. */
+    // Dispara a geração imediata de um novo LSA por alteração local de enlace ou custo.
     public void triggerNow() {
         synchronized (lock) {
             pending = true;

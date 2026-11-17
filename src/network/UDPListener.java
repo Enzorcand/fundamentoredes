@@ -11,9 +11,7 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Thread de escuta contínua de pacotes UDP na porta 6000.
- */
+// Thread de escuta contínua de pacotes UDP na porta 6000.
 public class UDPListener implements Runnable {
 
     public static final int PORT     = 6000;
@@ -59,8 +57,10 @@ public class UDPListener implements Runnable {
 
             String raw;
             try {
-                // Decodificação estrita: bytes que não são UTF-8 válido geram exceção
-                // (new String(...) substituiria silenciosamente por '?').
+                /*
+                 * Decodificação estrita: bytes que não são UTF-8 válido geram exceção
+                 * (new String(...) substituiria silenciosamente por '?').
+                 */
                 raw = StandardCharsets.UTF_8.newDecoder()
                         .onMalformedInput(CodingErrorAction.REPORT)
                         .onUnmappableCharacter(CodingErrorAction.REPORT)
