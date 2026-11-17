@@ -9,12 +9,7 @@ import java.util.*;
 
 /**
  * Link State Database (LSDB).
- * Mantém a versão válida mais recente do anúncio de cada roteador conhecido.
- *
- * Todos os métodos são sincronizados e nenhum devolve vistas "vivas" das
- * estruturas internas: quem lê recebe sempre uma cópia (snapshot), para que
- * outras threads possam alterar a LSDB enquanto o Dijkstra ou a sincronização
- * percorrem os registos.
+ * Métodos sincronizados retornam snapshots para isolar leituras durante o Dijkstra e sincronização.
  */
 public class LSDB {
 

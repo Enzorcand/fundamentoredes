@@ -6,19 +6,10 @@ import model.RoutingEntry;
 import java.util.*;
 
 /**
- * Motor de roteamento: constrói o grafo a partir da LSDB e calcula os caminhos
- * mínimos com o algoritmo de Dijkstra implementado manualmente.
- *
- * Regras do enunciado e adendos:
- *  - O grafo usa os custos anunciados em cada direção.
- *  - Uma aresta só é usada quando os LSAs válidos das DUAS extremidades a reconhecem.
- *  - O próximo salto é sempre um vizinho ativo.
- *  - Desempate determinístico: menor IP de próximo salto (adendo, no lugar do aleatório).
- *  - Não há rota para o próprio roteador.
- *
- * Empates: o algoritmo guarda o CONJUNTO de próximos saltos possíveis de cada
- * destino (todos os caminhos de custo mínimo) e, no fim, escolhe o de menor IP
- * entre os que são vizinhos ativos.
+ * Cálculo de caminhos mínimos com algoritmo de Dijkstra:
+ * - Aresta bidirecional: só existe se ambos os LSAs a anunciarem.
+ * - Próximo salto deve ser vizinho ativo.
+ * - Desempate determinístico: menor IPv4 numérico do próximo salto.
  */
 public class DijkstraRouter {
 

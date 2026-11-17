@@ -43,9 +43,7 @@ public class HelloHandler {
                 neighbor.setActive(true);
                 Logger.log(Logger.VIZINHO_ATIVO, hello.originIp,
                         "Vizinhança estabelecida (bidirecional)");
-                // Ordem importa: primeiro HELLO imediato + sincronização da LSDB
-                // (para o vizinho já nos considerar ativo e aceitar os LSAs),
-                // depois a geração do nosso novo LSA com o enlace incluído.
+                // Sincroniza LSDB com o novo vizinho antes de gerar o novo LSA local
                 state.notifyNewNeighborActive(hello.originIp);
                 state.notifyNeighborStateChange();
             }

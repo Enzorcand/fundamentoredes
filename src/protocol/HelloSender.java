@@ -63,12 +63,7 @@ public class HelloSender implements Runnable {
         }
     }
 
-    /**
-     * Envia um HELLO imediato a um único vizinho (fora do ciclo de 5s).
-     * Usado quando uma vizinhança é estabelecida: garante que o outro lado
-     * também nos considere ativo ANTES de receber a sincronização da LSDB,
-     * caso contrário ele descartaria esses LSAs ("remetente não é vizinho ativo").
-     */
+    /** Envia HELLO imediato para estabelecer bidirecionalidade antes do sync da LSDB. */
     public static void sendHelloTo(RouterState state, String neighborIp) {
         Neighbor n = state.getNeighbor(neighborIp);
         if (n == null || !n.isEnabled()) return;

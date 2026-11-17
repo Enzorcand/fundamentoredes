@@ -38,11 +38,7 @@ public class LSASender implements Runnable {
         this.onTopologyChanged = cb;
     }
 
-    /**
-     * Pede a geração imediata de um novo LSA (mudança de vizinhança ou custo).
-     * A flag "pending" garante que o pedido não se perde se chegar enquanto
-     * a thread ainda está a gerar o LSA anterior (fora do wait()).
-     */
+    /** Dispara a geração imediata de um novo LSA por alteração local de enlace ou custo. */
     public void triggerNow() {
         synchronized (lock) {
             pending = true;
@@ -101,7 +97,7 @@ public class LSASender implements Runnable {
 
         Logger.log(Logger.LSA_GERADO,
                 state.getMyIp() + " | SEQ=" + seq
-                        + " | vizinhos_activos=" + activeCount
+                        + " | vizinhos_ativos=" + activeCount
                         + " | " + lsaMsg);
 
         if (data.length > UDPListener.MAX_SIZE) {

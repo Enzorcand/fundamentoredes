@@ -39,10 +39,7 @@ public class SequenceNumberStore {
         return currentSeq;
     }
 
-    /**
-     * Adendo: ao receber o próprio LSA com sequência maior que a atual, avança a
-     * sequência local até ela e grava em seq.txt. O próximo nextAndSave() gera newSeq + 1.
-     */
+    /** Avança a sequência local ao receber LSA próprio com sequência mais alta. */
     public synchronized void advanceTo(int newSeq) {
         if (newSeq >= currentSeq) {
             int old = currentSeq;
