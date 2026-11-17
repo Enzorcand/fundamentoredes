@@ -8,9 +8,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /*
- * Link State Database (LSDB).
- * Métodos sincronizados retornam snapshots para isolar leituras durante o Dijkstra e sincronização.
- */
+  Link State Database (LSDB).
+  Métodos sincronizados retornam snapshots para isolar leituras durante o Dijkstra e sincronização.
+*/
 public class LSDB {
 
     private static final DateTimeFormatter TIME_FMT =
@@ -43,10 +43,10 @@ public class LSDB {
     }
 
     /*
-     * Regista uma nova versão do LSA de originIp.
-     * Versões duplicadas ou antigas (seq <= maior já aceite) são ignoradas.
-     * @return true se a topologia mudou (registo novo ou enlaces/custos diferentes).
-     */
+      Regista uma nova versão do LSA de originIp.
+      Versões duplicadas ou antigas (seq <= maior já aceite) são ignoradas.
+      @return true se a topologia mudou (registo novo ou enlaces/custos diferentes).
+    */
     public synchronized boolean accept(String originIp, int seq, Map<String, Integer> links) {
         if (seq <= maxSeqSeen.getOrDefault(originIp, 0)) {
             return false; // duplicado/antigo: não altera a LSDB nem renova a validade

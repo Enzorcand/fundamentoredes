@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.nio.file.*;
 
 /*
- * Persiste e recupera o número de sequência do LSA local.
- * Conforme enunciado: arquivo fixo "seq.txt"; ao reiniciar, continua do valor gravado + 1.
- */
+  Persiste e recupera o número de sequência do LSA local.
+  Conforme enunciado: arquivo fixo "seq.txt"; ao reiniciar, continua do valor gravado + 1.
+*/
 public class SequenceNumberStore {
 
     private final Path filePath;

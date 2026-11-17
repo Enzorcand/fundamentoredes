@@ -1,11 +1,11 @@
 package model;
 
 /*
- * Representa um vizinho configurado no roteadores.txt.
- * Armazena IP, custo, estado (ativo/inativo) e timestamp da última receção de HELLO válido.
- * Os campos são volatile porque são lidos e escritos por várias threads
- * (CLI, processador de mensagens, monitor de vizinhos, emissores de HELLO/LSA).
- */
+  Representa um vizinho configurado no roteadores.txt.
+  Armazena IP, custo, estado (ativo/inativo) e timestamp da última receção de HELLO válido.
+  Os campos são volatile porque são lidos e escritos por várias threads
+  (CLI, processador de mensagens, monitor de vizinhos, emissores de HELLO/LSA).
+*/
 public class Neighbor {
 
     public static final long HELLO_TIMEOUT_MS = 15_000L;

@@ -73,9 +73,9 @@ public class ConfigLoader {
     }
 
     /*
-     * Persiste a lista atual de vizinhos configurados em roteadores.txt.
-     * Chamado após addneighbor ou removeneighbor para manter o arquivo atualizado.
-     */
+      Persiste a lista atual de vizinhos configurados em roteadores.txt.
+      Chamado após addneighbor ou removeneighbor para manter o arquivo atualizado.
+    */
     public static void saveNeighbors(Map<String, Neighbor> neighbors) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(CONFIG_FILE))) {
             for (Neighbor n : neighbors.values()) {

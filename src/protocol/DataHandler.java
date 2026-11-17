@@ -12,12 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /*
- * Gestor e encaminhador de mensagens de dados (Mensagem 3 - DATA).
- * Conforme enunciado:
- * - O roteador de ORIGEM envia com o TTL inicial, SEM decrementá-lo.
- * - Roteadores INTERMEDIÁRIOS decrementam TTL antes de encaminhar.
- * - TTL é opcional ao enviar (0–255); padrão 16.
- */
+  Gestor e encaminhador de mensagens de dados (Mensagem 3 - DATA).
+  Conforme enunciado:
+  - O roteador de ORIGEM envia com o TTL inicial, SEM decrementá-lo.
+  - Roteadores INTERMEDIÁRIOS decrementam TTL antes de encaminhar.
+  - TTL é opcional ao enviar (0–255); padrão 16.
+*/
 public class DataHandler {
 
     public static final int INITIAL_TTL = 16;
@@ -102,9 +102,9 @@ public class DataHandler {
     }
 
     /*
-     * Envia mensagem DATA com TTL customizado (0–255).
-     * Conforme enunciado: a origem envia com o TTL inicial sem decrementá-lo.
-     */
+      Envia mensagem DATA com TTL customizado (0–255).
+      Conforme enunciado: a origem envia com o TTL inicial sem decrementá-lo.
+    */
     public boolean sendMessage(String destIp, String message, int ttl) {
         if (ttl < 0 || ttl > MAX_TTL) {
             Logger.log(Logger.ERRO,

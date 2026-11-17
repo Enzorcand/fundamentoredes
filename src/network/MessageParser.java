@@ -5,11 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /*
- * Parser de mensagens do protocolo Link State:
- * HELLO: @IP_ORIGEM*VIZ1*VIZ2*...
- * LSA:   #IP_ORIGEM;SEQUENCIA*VIZ1;CUSTO*VIZ2;CUSTO
- * DATA:  !IP_ORIGEM;IP_DESTINO;ID;TTL;MENSAGEM
- */
+  Parser de mensagens do protocolo Link State:
+  HELLO: @IP_ORIGEM*VIZ1*VIZ2*...
+  LSA:   #IP_ORIGEM;SEQUENCIA*VIZ1;CUSTO*VIZ2;CUSTO
+  DATA:  !IP_ORIGEM;IP_DESTINO;ID;TTL;MENSAGEM
+*/
 public class MessageParser {
 
     public static final int MIN_COST = 1;

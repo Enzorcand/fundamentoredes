@@ -105,9 +105,9 @@ public class CLI implements Runnable {
 
     // ─────────────────────────────────────────────────────────────────────────
     /*
-     * send <ip> [msg]
-     * send <ip> <ttl_opt> <msg>   (se 2.º token for inteiro 0-255 → é o TTL)
-     */
+      send <ip> [msg]
+      send <ip> <ttl_opt> <msg>   (se 2.º token for inteiro 0-255 → é o TTL)
+    */
     // ─────────────────────────────────────────────────────────────────────────
     private void handleSend(String[] parts, Scanner scanner) {
         String destIp;
@@ -415,10 +415,10 @@ public class CLI implements Runnable {
 
     // ─────────────────────────────────────────────────────────────────────────
     /*
-     * testlsa <origem> <vizinho> [dup|old]
-     * dup  → reenvia com sequência original (duplicado)
-     * old  → reenvia com sequência original - 1 (antigo)
-     */
+      testlsa <origem> <vizinho> [dup|old]
+      dup  → reenvia com sequência original (duplicado)
+      old  → reenvia com sequência original - 1 (antigo)
+    */
     // ─────────────────────────────────────────────────────────────────────────
     private void handleTestLsa(String[] parts, Scanner scanner) {
         String originIp;

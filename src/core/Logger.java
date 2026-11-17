@@ -10,14 +10,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
 /*
- * Logger centralizado de eventos do roteador.
- * Formato: TIPO_DE_EVENTO | ORIGEM | DESCRIÇÃO
- * Cada evento é impresso no terminal e gravado no ficheiro de log
- * (roteador_<IP>.log), conforme o enunciado: "As alterações deverão
- * aparecer no terminal e no log".
- * O modo silencioso (comando "quiet") esconde apenas do TERMINAL os eventos
- * periódicos de HELLO; eles continuam a ser gravados no ficheiro.
- */
+  Logger centralizado de eventos do roteador.
+  Formato: TIPO_DE_EVENTO | ORIGEM | DESCRIÇÃO
+  Cada evento é impresso no terminal e gravado no ficheiro de log
+  (roteador_<IP>.log), conforme o enunciado: "As alterações deverão
+  aparecer no terminal e no log".
+  O modo silencioso (comando "quiet") esconde apenas do TERMINAL os eventos
+  periódicos de HELLO; eles continuam a ser gravados no ficheiro.
+*/
 public class Logger {
 
     private static final DateTimeFormatter FORMATTER =

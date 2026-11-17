@@ -5,10 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /*
- * Registo de um LSA (Link State Advertisement) armazenado na LSDB:
- * IP de origem, número de sequência, enlaces anunciados e instante de
- * recebimento da versão válida.
- */
+  Registo de um LSA (Link State Advertisement) armazenado na LSDB:
+  IP de origem, número de sequência, enlaces anunciados e instante de
+  recebimento da versão válida.
+*/
 public class LSAEntry {
 
     public static final long VALIDITY_MS = 30_000L;

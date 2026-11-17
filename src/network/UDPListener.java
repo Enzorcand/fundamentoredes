@@ -58,9 +58,9 @@ public class UDPListener implements Runnable {
             String raw;
             try {
                 /*
-                 * Decodificação estrita: bytes que não são UTF-8 válido geram exceção
-                 * (new String(...) substituiria silenciosamente por '?').
-                 */
+                  Decodificação estrita: bytes que não são UTF-8 válido geram exceção
+                  (new String(...) substituiria silenciosamente por '?').
+                */
                 raw = StandardCharsets.UTF_8.newDecoder()
                         .onMalformedInput(CodingErrorAction.REPORT)
                         .onUnmappableCharacter(CodingErrorAction.REPORT)
