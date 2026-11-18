@@ -23,11 +23,10 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-/**
- * Ponto de entrada da aplicação de roteamento Link State (OSPF-like).
- *
- * Uso: java -cp out Main [IP_DO_ROTEADOR]
- */
+/*
+  Ponto de entrada da aplicação de roteamento Link State (OSPF-like).
+  Uso: java -cp out Main [IP_DO_ROTEADOR]
+*/
 public class Main {
 
     public static void main(String[] args) {
@@ -83,8 +82,10 @@ public class Main {
 
         // 8. Ligação de callbacks e gatilhos de eventos
         state.setOnNeighborStateChange(lsaSender::triggerNow);
-        // Nova vizinhança: HELLO imediato (para o vizinho também nos ativar)
-        // e, em seguida, envio de todos os LSAs válidos da LSDB (sincronização).
+        /*
+          Nova vizinhança: HELLO imediato (para o vizinho também nos ativar)
+          e, em seguida, envio de todos os LSAs válidos da LSDB (sincronização).
+        */
         state.setOnNewNeighborActive(ip -> {
             HelloSender.sendHelloTo(state, ip);
             lsaSender.syncLSDBWithNeighbor(ip);

@@ -2,9 +2,7 @@ package model;
 
 import java.util.Objects;
 
-/**
- * Uma entrada da tabela de roteamento: Destino, Custo Total e Próximo Salto.
- */
+// Uma entrada da tabela de roteamento: Destino, Custo Total e Próximo Salto.
 public class RoutingEntry {
 
     private final String destination;

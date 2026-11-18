@@ -6,9 +6,7 @@ import protocol.HelloHandler;
 import protocol.LSAHandler;
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Thread de processamento e despacho de mensagens recebidas.
- */
+// Thread de processamento e despacho de mensagens recebidas.
 public class MessageProcessor implements Runnable {
 
     private final BlockingQueue<RawMessage> queue;

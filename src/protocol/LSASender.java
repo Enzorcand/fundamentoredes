@@ -92,7 +92,7 @@ public class LSASender implements Runnable {
 
         Logger.log(Logger.LSA_GERADO,
                 state.getMyIp() + " | SEQ=" + seq
-                        + " | vizinhos_activos=" + activeCount
+                        + " | vizinhos_ativos=" + activeCount
                         + " | " + lsaMsg);
 
         if (data.length > UDPListener.MAX_SIZE) {

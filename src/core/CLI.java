@@ -13,9 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Scanner;
 
-/**
- * Interface interativa de linha de comandos (CLI) na thread principal.
- */
+// Interface interativa de linha de comandos (CLI) na thread principal.
 public class CLI implements Runnable {
 
     private final RouterState state;

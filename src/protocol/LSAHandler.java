@@ -35,7 +35,7 @@ public class LSAHandler {
 
         if (lsa.originIp.equals(state.getMyIp())) {
             SequenceNumberStore seqStore = state.getSeqStore();
-            if (seqStore != null && lsa.sequenceNumber > seqStore.getCurrent()) {
+            if (seqStore != null && lsa.sequenceNumber >= seqStore.getCurrent()) {
                 seqStore.advanceTo(lsa.sequenceNumber);
                 state.notifyNeighborStateChange();
             }

@@ -4,12 +4,12 @@ import core.Logger;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Parser de mensagens do protocolo Link State:
- *   HELLO: @IP_ORIGEM*VIZ1*VIZ2*...
- *   LSA:   #IP_ORIGEM;SEQUENCIA*VIZ1;CUSTO*VIZ2;CUSTO
- *   DATA:  !IP_ORIGEM;IP_DESTINO;ID;TTL;MENSAGEM
- */
+/*
+  Parser de mensagens do protocolo Link State:
+  HELLO: @IP_ORIGEM*VIZ1*VIZ2*...
+  LSA:   #IP_ORIGEM;SEQUENCIA*VIZ1;CUSTO*VIZ2;CUSTO
+  DATA:  !IP_ORIGEM;IP_DESTINO;ID;TTL;MENSAGEM
+*/
 public class MessageParser {
 
     public static final int MIN_COST = 1;
@@ -211,7 +211,7 @@ public class MessageParser {
         return new DataMessage(originIp, destIp, id, ttl, content);
     }
 
-    /** IPv4 em notação decimal com quatro octetos de 0 a 255. */
+    // IPv4 em notação decimal com quatro octetos de 0 a 255.
     public static boolean isValidIp(String ip) {
         if (ip == null) return false;
         if (!ip.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")) return false;
@@ -221,7 +221,7 @@ public class MessageParser {
         return true;
     }
 
-    /** Custo de enlace válido: inteiro de MIN_COST a MAX_COST. */
+    // Custo de enlace válido: inteiro de MIN_COST a MAX_COST.
     public static boolean isValidCost(int cost) {
         return cost >= MIN_COST && cost <= MAX_COST;
     }
