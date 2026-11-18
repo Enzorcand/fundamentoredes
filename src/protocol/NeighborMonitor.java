@@ -5,7 +5,6 @@ import core.RouterState;
 import model.Neighbor;
 import java.util.Map;
 
-// Thread que monitoriza os timeouts de HELLO dos vizinhos (15 segundos).
 public class NeighborMonitor implements Runnable {
 
     private static final int CHECK_INTERVAL_MS = 1_000;

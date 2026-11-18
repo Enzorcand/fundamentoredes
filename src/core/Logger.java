@@ -9,21 +9,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
-/*
-  Logger centralizado de eventos do roteador.
-  Formato: TIPO_DE_EVENTO | ORIGEM | DESCRIÇÃO
-  Cada evento é impresso no terminal e gravado no ficheiro de log
-  (roteador_<IP>.log), conforme o enunciado: "As alterações deverão
-  aparecer no terminal e no log".
-  O modo silencioso (comando "quiet") esconde apenas do TERMINAL os eventos
-  periódicos de HELLO; eles continuam a ser gravados no ficheiro.
-*/
 public class Logger {
 
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
-    // Tipos de evento
     public static final String HELLO_RECEBIDO       = "HELLO_RECEBIDO";
     public static final String HELLO_ENVIADO        = "HELLO_ENVIADO";
     public static final String HELLO_DESCARTADO     = "HELLO_DESCARTADO";
@@ -53,13 +43,11 @@ public class Logger {
     public static final String SEQ_SALTADA          = "SEQ_SALTADA";
     public static final String ERRO                 = "ERRO";
 
-    // Eventos periódicos escondidos do terminal no modo silencioso.
     private static final Set<String> NOISY = Set.of(HELLO_ENVIADO, HELLO_RECEBIDO);
 
     private static PrintWriter fileOut;
     private static volatile boolean quiet = false;
 
-    // Abre (em modo append) o ficheiro de log deste roteador.
     public static synchronized void init(String myIp) {
         String fileName = "roteador_" + myIp + ".log";
         try {

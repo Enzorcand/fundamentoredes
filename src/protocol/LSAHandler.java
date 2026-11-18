@@ -9,7 +9,6 @@ import network.MessageParser;
 import network.UDPListener;
 import java.util.Map;
 
-// Lógica de processamento de LSAs recebidos e flooding.
 public class LSAHandler {
 
     private final RouterState state;
@@ -26,7 +25,6 @@ public class LSAHandler {
     public void handle(MessageParser.LSAMessage lsa, String senderIp) {
         LSDB lsdb = state.getLsdb();
 
-        // Aceita LSA de vizinho configurado/habilitado (permite sincronização inicial)
         Neighbor sender = state.getNeighbor(senderIp);
         if (sender == null || !sender.isEnabled()) {
             Logger.log(Logger.LSA_DESCARTADO,
@@ -35,7 +33,6 @@ public class LSAHandler {
             return;
         }
 
-        // LSA próprio: se sequência recebida for maior/igual, avança seqStore e gera novo LSA para sobrepor
         if (lsa.originIp.equals(state.getMyIp())) {
             SequenceNumberStore seqStore = state.getSeqStore();
             if (seqStore != null && lsa.sequenceNumber >= seqStore.getCurrent()) {
@@ -54,7 +51,6 @@ public class LSAHandler {
                     lsa.originIp + " | SEQ=" + lsa.sequenceNumber
                             + " | Duplicado/Antigo — descartado (max_visto=" + maxSeen + ")");
 
-            // Se vizinho reiniciou com SEQ menor, devolvemos a maior vista para ele sincronizar
             if (lsa.sequenceNumber < maxSeen && lsa.originIp.equals(senderIp)) {
                 sendNewerCopyToOrigin(lsdb, lsa.originIp, maxSeen);
             }
@@ -106,7 +102,6 @@ public class LSAHandler {
         return sb.toString();
     }
 
-    // Devolve à origem o seu LSA com a maior sequência já vista para permitir recuperação.
     private void sendNewerCopyToOrigin(LSDB lsdb, String originIp, int maxSeen) {
         StringBuilder sb = new StringBuilder("#");
         sb.append(originIp).append(";").append(maxSeen);

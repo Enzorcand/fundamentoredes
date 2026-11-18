@@ -10,7 +10,6 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-// Thread de envio periódico de mensagens HELLO a cada 5 segundos.
 public class HelloSender implements Runnable {
 
     private static final int HELLO_INTERVAL_MS = 5_000;
@@ -39,7 +38,6 @@ public class HelloSender implements Runnable {
         Logger.log("HELLO_SENDER", "Encerrado.");
     }
 
-    // Monta "@IP_ORIGEM*VIZ1*VIZ2..." com os vizinhos configurados e habilitados.
     private static String buildHello(RouterState state, Map<String, Neighbor> neighbors) {
         StringBuilder sb = new StringBuilder("@");
         sb.append(state.getMyIp());
@@ -61,7 +59,6 @@ public class HelloSender implements Runnable {
         }
     }
 
-    // Envia HELLO imediato para estabelecer bidirecionalidade antes do sync da LSDB.
     public static void sendHelloTo(RouterState state, String neighborIp) {
         Neighbor n = state.getNeighbor(neighborIp);
         if (n == null || !n.isEnabled()) return;

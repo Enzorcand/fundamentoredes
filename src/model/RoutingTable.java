@@ -3,7 +3,6 @@ package model;
 import core.Logger;
 import java.util.*;
 
-// Tabela de Roteamento do roteador Link State.
 public class RoutingTable {
 
     private final Map<String, RoutingEntry> routes = new TreeMap<>();

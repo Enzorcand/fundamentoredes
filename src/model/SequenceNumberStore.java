@@ -4,10 +4,6 @@ import core.Logger;
 import java.io.IOException;
 import java.nio.file.*;
 
-/*
-  Persiste e recupera o número de sequência do LSA local.
-  Conforme enunciado: arquivo fixo "seq.txt"; ao reiniciar, continua do valor gravado + 1.
-*/
 public class SequenceNumberStore {
 
     private final Path filePath;
@@ -23,7 +19,6 @@ public class SequenceNumberStore {
         try {
             String content = new String(Files.readAllBytes(filePath)).trim();
             int seq = Integer.parseInt(content);
-            // Ao reiniciar, a numeração continua a partir do valor gravado mais 1 (nextAndSave faz o incremento)
             Logger.log("SEQ_CARREGADO", "Sequência anterior: " + seq
                     + " — próxima será " + (seq + 1) + " (ficheiro: " + filePath + ")");
             return seq;
@@ -39,7 +34,6 @@ public class SequenceNumberStore {
         return currentSeq;
     }
 
-    // Avança a sequência local ao receber LSA próprio com sequência mais alta.
     public synchronized void advanceTo(int newSeq) {
         if (newSeq >= currentSeq) {
             int old = currentSeq;

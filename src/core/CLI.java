@@ -103,12 +103,6 @@ public class CLI implements Runnable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    /*
-      send <ip> [msg]
-      send <ip> <ttl_opt> <msg>   (se 2.º token for inteiro 0-255 → é o TTL)
-    */
-    // ─────────────────────────────────────────────────────────────────────────
     private void handleSend(String[] parts, Scanner scanner) {
         String destIp;
         String msgText;
@@ -116,7 +110,6 @@ public class CLI implements Runnable {
 
         if (parts.length >= 3) {
             destIp = parts[1].trim();
-            // parts[2] = "resto da linha"; verificar se começa com token numérico 0-255 (TTL opcional)
             String rest = parts[2].trim();
             int firstSpace = rest.indexOf(' ');
             if (firstSpace > 0) {
@@ -200,9 +193,6 @@ public class CLI implements Runnable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // disable <ip>
-    // ─────────────────────────────────────────────────────────────────────────
     private void handleDisable(String[] parts, Scanner scanner) {
         String ip;
         if (parts.length >= 2) {
@@ -236,9 +226,6 @@ public class CLI implements Runnable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // enable <ip>
-    // ─────────────────────────────────────────────────────────────────────────
     private void handleEnable(String[] parts, Scanner scanner) {
         String ip;
         if (parts.length >= 2) {
@@ -265,9 +252,6 @@ public class CLI implements Runnable {
         Logger.log(Logger.ENLACE_ATIVADO, ip + " | Aguardando confirmação HELLO bidirecional");
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // cost <ip> <novo_custo>
-    // ─────────────────────────────────────────────────────────────────────────
     private void handleCost(String[] parts, Scanner scanner) {
         String ip;
         String costStr;
@@ -321,9 +305,6 @@ public class CLI implements Runnable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // addneighbor <ip> <custo>
-    // ─────────────────────────────────────────────────────────────────────────
     private void handleAddNeighbor(String[] parts, Scanner scanner) {
         String ip;
         String costStr;
@@ -382,9 +363,6 @@ public class CLI implements Runnable {
         Logger.log(Logger.VIZINHO_ADICIONADO, ip + " | custo=" + cost);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // removeneighbor <ip>
-    // ─────────────────────────────────────────────────────────────────────────
     private void handleRemoveNeighbor(String[] parts, Scanner scanner) {
         String ip;
         if (parts.length >= 2) {
@@ -413,13 +391,6 @@ public class CLI implements Runnable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    /*
-      testlsa <origem> <vizinho> [dup|old]
-      dup  → reenvia com sequência original (duplicado)
-      old  → reenvia com sequência original - 1 (antigo)
-    */
-    // ─────────────────────────────────────────────────────────────────────────
     private void handleTestLsa(String[] parts, Scanner scanner) {
         String originIp;
         String neighborIp;
@@ -471,11 +442,9 @@ public class CLI implements Runnable {
 
         int seq = entry.getSequenceNumber();
         if ("old".equals(type)) {
-            seq = Math.max(1, seq - 1);  // sequência menor = antigo
+            seq = Math.max(1, seq - 1);
         }
-        // "dup" usa a sequência original
 
-        // Montar string do LSA
         StringBuilder sb = new StringBuilder("#");
         sb.append(entry.getOriginIp()).append(";").append(seq);
         for (Map.Entry<String, Integer> link : entry.getLinks().entrySet()) {
@@ -505,9 +474,6 @@ public class CLI implements Runnable {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Utilitários
-    // ─────────────────────────────────────────────────────────────────────────
     private void printNeighbors() {
         System.out.println("┌─────────────────┬───────┬─────────┬───────────┐");
         System.out.printf( "│ %-15s │ %-5s │ %-7s │ %-9s │%n", "Vizinho", "Custo", "Ativo", "Habilitado");
