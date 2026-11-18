@@ -58,20 +58,13 @@ public class Main {
         // 4. Abrir socket UDP na porta 6000
         DatagramSocket socket;
         try {
-            // Tenta dar bind no IP específico (permite rodar múltiplos roteadores na mesma máquina via aliases de IP)
-            socket = new DatagramSocket(new java.net.InetSocketAddress(java.net.InetAddress.getByName(myIp), UDPListener.PORT));
-            Logger.log("SOCKET_ABERTO", "UDP " + myIp + ":" + UDPListener.PORT);
-        } catch (Exception e) {
-            // Fallback para bind wildcard caso myIp não seja endereço local
-            try {
-                socket = new DatagramSocket(UDPListener.PORT);
-                Logger.log("SOCKET_ABERTO", "UDP porta " + UDPListener.PORT);
-            } catch (SocketException ex) {
-                Logger.log(Logger.ERRO, "Não foi possível abrir socket UDP na porta "
-                        + UDPListener.PORT + ": " + ex.getMessage());
-                System.exit(1);
-                return;
-            }
+            socket = new DatagramSocket(UDPListener.PORT);
+            Logger.log("SOCKET_ABERTO", "UDP porta " + UDPListener.PORT);
+        } catch (SocketException e) {
+            Logger.log(Logger.ERRO, "Não foi possível abrir socket UDP na porta "
+                    + UDPListener.PORT + ": " + e.getMessage());
+            System.exit(1);
+            return;
         }
 
         // 5. Estado partilhado (RouterState)
